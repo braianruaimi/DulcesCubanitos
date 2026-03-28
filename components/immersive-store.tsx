@@ -1,8 +1,10 @@
 'use client';
 
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
-import type { Product as CartProduct } from '@/types/cart';
 import { useEffect, useMemo, useRef, useState } from 'react';
+
+import type { Product as CartProduct } from '@/types/cart';
 
 type Product = {
   id: string;
@@ -12,6 +14,7 @@ type Product = {
   priceLabel: string;
   priceValue: number;
   images: string[];
+  stockBadge: string;
   accent: 'pink' | 'cyan';
 };
 
@@ -36,72 +39,79 @@ const withBasePath = (path: string) => `${basePath}${path}`;
 const products: Product[] = [
   {
     id: 'clasicos',
-    category: 'Los Clasicos',
-    title: 'Dulce de Leche Rush',
-    subtitle: 'Crujiente fino, relleno al instante y golpe final de azucar glass.',
+    category: 'Clasicos',
+    title: 'Cubanito Clasico',
+    subtitle: 'Relleno brillante de dulce de leche, crocante fino y acabado de azucar glass.',
     priceLabel: '$3.200',
     priceValue: 3200,
     images: [withBasePath('/images/cubanito-neon-1.svg'), withBasePath('/images/cubanito-neon-2.svg'), withBasePath('/images/cubanito-neon-3.svg')],
+    stockBadge: '🔥 Sale en 1h',
     accent: 'pink',
   },
   {
-    id: 'nocciola',
+    id: 'premium-nocciola',
     category: 'Premium Nocciola',
-    title: 'Hazelnut Pulse',
-    subtitle: 'Nocciola intensa con textura cremosa y remate de cacao oscuro.',
+    title: 'Cubanito Nutella',
+    subtitle: 'Nocciola intensa, textura cremosa y un golpe final de cacao oscuro.',
     priceLabel: '$4.100',
     priceValue: 4100,
     images: [withBasePath('/images/cubanito-neon-2.svg'), withBasePath('/images/cubanito-neon-3.svg'), withBasePath('/images/cubanito-neon-1.svg')],
+    stockBadge: 'Solo 10 unidades',
     accent: 'cyan',
   },
   {
     id: 'edicion-limitada',
     category: 'Edicion Limitada',
     title: 'Pink Citrus Voltage',
-    subtitle: 'Crema citrica brillante con un acabado fresco y electrico.',
+    subtitle: 'Crema citrica electrica con brillo fresco y salida aromatica precisa.',
     priceLabel: '$4.600',
     priceValue: 4600,
     images: [withBasePath('/images/cubanito-neon-3.svg'), withBasePath('/images/cubanito-neon-1.svg'), withBasePath('/images/cubanito-neon-2.svg')],
+    stockBadge: '🔥 Batch del dia',
     accent: 'pink',
   },
   {
     id: 'black-label',
     category: 'Black Label',
     title: 'Cacao Obsidiana',
-    subtitle: 'Chocolate amargo sedoso, capas finas y un contraste profundo.',
+    subtitle: 'Chocolate amargo sedoso, capas finas y contraste profundo.',
     priceLabel: '$4.500',
     priceValue: 4500,
     images: [withBasePath('/images/cubanito-neon-1.svg'), withBasePath('/images/cubanito-neon-3.svg'), withBasePath('/images/cubanito-neon-2.svg')],
+    stockBadge: 'Solo hoy',
     accent: 'cyan',
   },
   {
-    id: 'eco-sweet',
-    category: 'Eco-Sweet',
+    id: 'vegano',
+    category: 'Veganos',
     title: 'Plant Based Glow',
-    subtitle: 'Version vegana con crema de coco tostado y vainilla limpia.',
+    subtitle: 'Version vegetal con coco tostado y vainilla limpia, lista para envio rapido.',
     priceLabel: '$4.000',
     priceValue: 4000,
     images: [withBasePath('/images/cubanito-neon-2.svg'), withBasePath('/images/cubanito-neon-1.svg'), withBasePath('/images/cubanito-neon-3.svg')],
+    stockBadge: '🌿 Sale en 2h',
     accent: 'pink',
   },
   {
     id: 'mini-bites',
     category: 'Mini Bites',
     title: 'Pocket Crunch',
-    subtitle: 'Pack de mini cubanitos para mesa dulce, eventos y antojos serios.',
+    subtitle: 'Mini cubanitos para mesas dulces, eventos y antojos urgentes.',
     priceLabel: '$2.700',
     priceValue: 2700,
     images: [withBasePath('/images/cubanito-neon-3.svg'), withBasePath('/images/cubanito-neon-2.svg'), withBasePath('/images/cubanito-neon-1.svg')],
+    stockBadge: 'Ultimos packs',
     accent: 'cyan',
   },
   {
     id: 'signature',
     category: 'Signature Drops',
     title: 'Neon Signature Box',
-    subtitle: 'Seleccion del taller con rellenos premium y acabado de temporada.',
+    subtitle: 'Curaduria premium del taller con acabados de temporada y textura glaseada.',
     priceLabel: '$5.200',
     priceValue: 5200,
     images: [withBasePath('/images/cubanito-neon-1.svg'), withBasePath('/images/cubanito-neon-2.svg'), withBasePath('/images/cubanito-neon-3.svg')],
+    stockBadge: 'Reserva express',
     accent: 'pink',
   },
 ];
@@ -109,29 +119,27 @@ const products: Product[] = [
 const faqs: Faq[] = [
   {
     question: '¿Hacen envios?',
-    answer: '¡Si! Llegamos a [Tu Zona] los martes y jueves. Consulta costo segun tu direccion.',
+    answer: 'Si. Coordinamos envios y puntos de retiro segun zona y horario disponible.',
   },
   {
     question: '¿Son frescos?',
-    answer: '¡Totalmente! Los rellenamos en el momento de armar tu pedido para que mantengan el crocante perfecto.',
+    answer: 'Si. Trabajamos por tanda corta para mantener crocante, relleno y terminacion impecable.',
   },
   {
     question: '¿Tienen opciones Veganas?',
-    answer: '¡Claro! Nuestra linea Eco-Sweet es 100% plant-based y deliciosa.',
+    answer: 'Si. La linea Plant Based Glow esta pensada para una experiencia vegana premium.',
   },
   {
     question: '¿Como reservo para un evento?',
-    answer: '¡Genial! Toca el boton de WhatsApp y coordinamos cantidad, sabores y fecha.',
+    answer: 'Abre WhatsApp desde la reserva y te armamos cantidades, sabores y timing de entrega.',
   },
   {
     question: '¿Tienen local fisico?',
-    answer: 'Somos un taller artesanal. Trabajamos solo con envios y puntos de retiro programados.',
+    answer: 'Trabajamos como taller artesanal con retiro coordinado y envios programados.',
   },
 ];
 
-const whatsappMessage =
-  '¡Hola Cubanitos Dulces! Quiero reservar un pack personalizado. ¿Me ayudan?';
-
+const whatsappFallbackMessage = '¡Hola DulcesCubanitos! Quiero reservar un pack personalizado. ¿Me confirman disponibilidad?';
 const whatsappNumber = '2215047962';
 
 const initialCustomerDetails: CustomerDetails = {
@@ -180,7 +188,7 @@ const isCustomerDetails = (value: unknown): value is CustomerDetails => {
 };
 
 const generateWhatsAppMessage = (cart: CartProduct[], total: number, customerDetails: CustomerDetails) => {
-  let message = '*🍦 NUEVO PEDIDO - CUBANITOS DULCES*\n';
+  let message = '*🍦 NUEVO PEDIDO - DULCES CUBANITOS*\n';
   message += '--------------------------\n';
 
   cart.forEach((item) => {
@@ -220,12 +228,81 @@ const generateWhatsAppMessage = (cart: CartProduct[], total: number, customerDet
   return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
 };
 
-const cartIndicatorBase =
-  'inline-flex min-w-10 items-center justify-center rounded-full border px-3 py-1 text-sm font-semibold';
+function BagIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+      <path d="M7 9V7a5 5 0 0 1 10 0v2" strokeLinecap="round" />
+      <path d="M5.5 9.5h13l-1.1 10.2a2 2 0 0 1-2 1.8H8.6a2 2 0 0 1-2-1.8L5.5 9.5Z" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function WhatsAppIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-7 w-7 fill-[#25D366]" aria-hidden="true">
+      <path d="M19.05 4.94A9.87 9.87 0 0 0 12.04 2C6.56 2 2.1 6.46 2.1 11.94c0 1.75.46 3.47 1.33 4.99L2 22l5.23-1.37a9.92 9.92 0 0 0 4.8 1.23h.01c5.48 0 9.94-4.46 9.95-9.94A9.86 9.86 0 0 0 19.05 4.94Zm-7 15.24h-.01a8.23 8.23 0 0 1-4.18-1.14l-.3-.18-3.1.81.83-3.02-.2-.31a8.23 8.23 0 0 1-1.27-4.4c0-4.56 3.71-8.27 8.28-8.27a8.2 8.2 0 0 1 5.85 2.42 8.2 8.2 0 0 1 2.42 5.86c0 4.56-3.71 8.27-8.27 8.27Zm4.54-6.16c-.25-.13-1.47-.73-1.69-.82-.23-.08-.39-.13-.56.13-.17.25-.65.82-.8.99-.15.17-.29.19-.54.06-.25-.13-1.04-.38-1.98-1.2-.73-.65-1.22-1.44-1.37-1.68-.15-.25-.02-.38.11-.51.11-.11.25-.29.38-.44.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.76-1.84-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1s.9 2.45 1.03 2.62c.13.17 1.76 2.68 4.26 3.76.6.26 1.07.41 1.44.53.61.19 1.16.16 1.59.1.49-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.06-.1-.23-.15-.48-.28Z" />
+    </svg>
+  );
+}
+
+function BotIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-7 w-7 stroke-neonCyan" fill="none" strokeWidth="1.8" aria-hidden="true">
+      <path d="M12 3v2" strokeLinecap="round" />
+      <path d="M8 8.5h8" strokeLinecap="round" />
+      <rect x="5" y="6" width="14" height="11" rx="4" />
+      <path d="M9 12h.01M15 12h.01" strokeLinecap="round" />
+      <path d="M9.5 15c.73.67 1.51 1 2.5 1 1 0 1.77-.33 2.5-1" strokeLinecap="round" />
+      <path d="M8 17v4l3-2h2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function SplashScreen() {
+  return (
+    <motion.div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black"
+      initial={{ opacity: 1 }}
+      exit={{ opacity: 0, transition: { duration: 0.35 } }}
+    >
+      <div className="flex flex-col items-center gap-5">
+        <motion.div
+          className="cubanito-mask h-28 w-28 rounded-full"
+          animate={{ rotate: 360, scale: [1, 1.05, 1] }}
+          transition={{ duration: 2.4, repeat: Number.POSITIVE_INFINITY, ease: 'linear' }}
+        />
+        <motion.p
+          className="text-xs uppercase tracking-[0.55em] text-neonPink/85"
+          animate={{ opacity: [0.35, 1, 0.35] }}
+          transition={{ duration: 1.2, repeat: Number.POSITIVE_INFINITY }}
+        >
+          Dark Sugar Neon
+        </motion.p>
+      </div>
+    </motion.div>
+  );
+}
+
+function StockBadge({ label, accent }: { label: string; accent: Product['accent'] }) {
+  return (
+    <motion.div
+      className={`absolute right-3 top-3 rounded-full border px-3 py-1 text-[0.65rem] font-black uppercase tracking-[0.22em] backdrop-blur-md ${
+        accent === 'pink'
+          ? 'border-neonPink/50 bg-black/65 text-neonPink shadow-[0_0_18px_rgba(255,105,180,0.26)]'
+          : 'border-neonCyan/50 bg-black/65 text-neonCyan shadow-[0_0_18px_rgba(0,255,255,0.2)]'
+      }`}
+      animate={{ opacity: [0.7, 1, 0.7], scale: [1, 1.03, 1] }}
+      transition={{ duration: 1.8, repeat: Number.POSITIVE_INFINITY }}
+    >
+      {label}
+    </motion.div>
+  );
+}
 
 export function ImmersiveStore() {
+  const prefersReducedMotion = useReducedMotion();
+  const [splashVisible, setSplashVisible] = useState(() => process.env.NODE_ENV !== 'test');
   const [activeIndexes, setActiveIndexes] = useState<number[]>(() => products.map(() => 0));
-  const [parallaxOffsets, setParallaxOffsets] = useState<number[]>(() => products.map(() => 0));
   const [cart, setCart] = useState<CartProduct[]>([]);
   const [cartReady, setCartReady] = useState(false);
   const [cartPulse, setCartPulse] = useState(false);
@@ -234,53 +311,18 @@ export function ImmersiveStore() {
   const [customerDetails, setCustomerDetails] = useState<CustomerDetails>(initialCustomerDetails);
   const [chatOpen, setChatOpen] = useState(false);
   const [activeFaq, setActiveFaq] = useState<Faq>(faqs[0]);
-  const cardRefs = useRef<Array<HTMLElement | null>>([]);
+  const [heroLoaded, setHeroLoaded] = useState(false);
+  const trackRefs = useRef<Array<HTMLDivElement | null>>([]);
 
   useEffect(() => {
-    const interval = window.setInterval(() => {
-      setActiveIndexes((current) => current.map((value) => (value + 1) % 3));
-    }, 3000);
+    if (!splashVisible) {
+      return;
+    }
 
-    return () => window.clearInterval(interval);
-  }, []);
+    const timeout = window.setTimeout(() => setSplashVisible(false), 980);
 
-  useEffect(() => {
-    let animationFrame = 0;
-
-    const updateParallax = () => {
-      setParallaxOffsets(
-        products.map((_, index) => {
-          const element = cardRefs.current[index];
-
-          if (!element) {
-            return 0;
-          }
-
-          const rect = element.getBoundingClientRect();
-          const viewportCenter = window.innerHeight / 2;
-          const cardCenter = rect.top + rect.height / 2;
-          const distance = (cardCenter - viewportCenter) / window.innerHeight;
-
-          return distance * -26;
-        }),
-      );
-    };
-
-    const handleScroll = () => {
-      cancelAnimationFrame(animationFrame);
-      animationFrame = window.requestAnimationFrame(updateParallax);
-    };
-
-    updateParallax();
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('resize', handleScroll);
-
-    return () => {
-      cancelAnimationFrame(animationFrame);
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', handleScroll);
-    };
-  }, []);
+    return () => window.clearTimeout(timeout);
+  }, [splashVisible]);
 
   useEffect(() => {
     try {
@@ -343,9 +385,43 @@ export function ImmersiveStore() {
     return () => window.removeEventListener('keydown', onEscape);
   }, [chatOpen, cartOpen]);
 
+  useEffect(() => {
+    const syncTrack = (productIndex: number, imageIndex: number) => {
+      const track = trackRefs.current[productIndex];
+
+      if (!track) {
+        return;
+      }
+
+      const nextLeft = track.clientWidth * imageIndex;
+
+      if (typeof track.scrollTo === 'function') {
+        track.scrollTo({
+          left: nextLeft,
+          behavior: prefersReducedMotion ? 'auto' : 'smooth',
+        });
+        return;
+      }
+
+      track.scrollLeft = nextLeft;
+    };
+
+    const interval = window.setInterval(() => {
+      setActiveIndexes((current) =>
+        current.map((value, productIndex) => {
+          const nextIndex = (value + 1) % 3;
+          syncTrack(productIndex, nextIndex);
+          return nextIndex;
+        }),
+      );
+    }, 3000);
+
+    return () => window.clearInterval(interval);
+  }, [prefersReducedMotion]);
+
   const cartClassName = useMemo(() => {
     const pulseClass = cartPulse ? 'animate-pulseGlow' : '';
-    return `${cartIndicatorBase} border-neonCyan/50 bg-black/80 text-white shadow-neon ${pulseClass}`.trim();
+    return `inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/80 px-3 py-1.5 text-sm font-semibold text-white shadow-neon ${pulseClass}`.trim();
   }, [cartPulse]);
 
   const cartCount = useMemo(() => cart.reduce((total, item) => total + item.quantity, 0), [cart]);
@@ -353,17 +429,14 @@ export function ImmersiveStore() {
 
   const checkoutUrl = useMemo(() => {
     if (cart.length === 0) {
-      return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
+      return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappFallbackMessage)}`;
     }
 
     return generateWhatsAppMessage(cart, cartTotal, customerDetails);
   }, [cart, cartTotal, customerDetails]);
 
   const updateCustomerDetail = (field: keyof CustomerDetails, value: string) => {
-    setCustomerDetails((current) => ({
-      ...current,
-      [field]: value,
-    }));
+    setCustomerDetails((current) => ({ ...current, [field]: value }));
   };
 
   const addToCart = (product: Product) => {
@@ -372,27 +445,16 @@ export function ImmersiveStore() {
 
       if (existingProduct) {
         return current.map((item) =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item,
+          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item,
         );
       }
 
-      return [
-        ...current,
-        {
-          id: product.id,
-          name: product.title,
-          price: product.priceValue,
-          quantity: 1,
-        },
-      ];
+      return [...current, { id: product.id, name: product.title, price: product.priceValue, quantity: 1 }];
     });
 
     setActivePulseId(product.id);
     setCartPulse(true);
-
-    window.setTimeout(() => setActivePulseId((current) => (current === product.id ? null : current)), 700);
+    window.setTimeout(() => setActivePulseId((current) => (current === product.id ? null : current)), 680);
     window.setTimeout(() => setCartPulse(false), 900);
   };
 
@@ -415,11 +477,9 @@ export function ImmersiveStore() {
   const increaseQuantity = (productId: string) => {
     const product = products.find((entry) => entry.id === productId);
 
-    if (!product) {
-      return;
+    if (product) {
+      addToCart(product);
     }
-
-    addToCart(product);
   };
 
   const removeFromCart = (productId: string) => {
@@ -427,399 +487,445 @@ export function ImmersiveStore() {
   };
 
   const openCart = () => {
-    if (cartCount === 0) {
+    if (cartCount > 0) {
+      setCartOpen(true);
+    }
+  };
+
+  const onTrackScroll = (productIndex: number) => {
+    const track = trackRefs.current[productIndex];
+
+    if (!track || track.clientWidth === 0) {
       return;
     }
 
-    setCartOpen(true);
+    const nextIndex = Math.round(track.scrollLeft / track.clientWidth);
+
+    setActiveIndexes((current) =>
+      current.map((value, index) => (index === productIndex ? nextIndex : value)),
+    );
   };
 
   return (
-    <main className="relative overflow-x-hidden pb-44 text-white">
-      <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 pb-12 pt-4 sm:px-6 lg:px-8">
-        <header className="sticky top-4 z-30 mb-8 rounded-[28px] border border-white/10 bg-black/75 px-4 py-4 backdrop-blur-xl sm:px-6 panel-border brutalist-shadow">
-          <div className="flex items-center justify-between gap-4">
-            <div className="max-w-[14rem] sm:max-w-none">
-              <p className="text-[0.7rem] uppercase tracking-[0.5em] text-white/50">Dark Sugar Neon</p>
-              <h1 className="text-balance neon-text mt-2 text-2xl font-black uppercase tracking-[0.22em] sm:text-4xl">
-                Cubanitos Dulces
-              </h1>
-            </div>
-            <div className="flex flex-col items-end gap-2">
-              <button
-                type="button"
-                onClick={openCart}
-                disabled={cartCount === 0}
-                aria-label="Abrir carrito"
-                className={`${cartClassName} transition hover:-translate-y-0.5 disabled:cursor-default disabled:opacity-80`}
-              >
-                Carrito {cartCount}
-              </button>
-              <p className="text-xs uppercase tracking-[0.32em] text-white/50">
-                Total {formatPrice(cartTotal)}
-              </p>
+    <>
+      <AnimatePresence>{splashVisible ? <SplashScreen /> : null}</AnimatePresence>
+
+      <main className="relative overflow-x-hidden pb-44 text-white">
+        <header className="sticky top-3 z-40 mx-auto mt-3 flex w-[min(100%-1rem,76rem)] items-center justify-between rounded-full border border-white/10 bg-black/75 px-4 py-2 backdrop-blur-xl sm:px-5 glazed-panel">
+          <div className="flex items-center gap-3">
+            <div className="cubanito-mask h-9 w-9 rounded-full" aria-hidden="true" />
+            <div>
+              <p className="text-[0.55rem] uppercase tracking-[0.45em] text-white/45">Dark Sugar Neon</p>
+              <p className="neon-text text-sm font-black uppercase tracking-[0.24em] text-white sm:text-base">DulcesCubanitos</p>
             </div>
           </div>
-          <div className="mt-5 grid gap-3 border-t border-white/10 pt-4 text-sm text-white/70 sm:grid-cols-[1.4fr,1fr,1fr]">
-            <p className="text-balance max-w-xl">
-              Venta inmersiva para elegir, sumar y reservar cubanitos con una vibra nocturna, brutalista y hecha para mobile.
-            </p>
-            <p className="border-l border-neonPink/40 pl-3 uppercase tracking-[0.35em] text-neonPink/90">
-              7 categorias en rotacion automatica
-            </p>
-            <p className="border-l border-neonCyan/40 pl-3 uppercase tracking-[0.35em] text-neonCyan/90">
-              Reservas, carrito y PWA instalable
-            </p>
-          </div>
+
+          <button
+            type="button"
+            onClick={openCart}
+            disabled={cartCount === 0}
+            aria-label="Abrir carrito"
+            className={`${cartClassName} disabled:opacity-85`}
+          >
+            <span className="text-white/80">
+              <BagIcon />
+            </span>
+            <span className="hidden text-[0.7rem] uppercase tracking-[0.28em] text-white/60 sm:inline">Reserva</span>
+            <span className="cart-bubble min-w-7 rounded-full px-2 py-0.5 text-center text-xs font-black text-black">
+              {cartCount}
+            </span>
+          </button>
         </header>
 
-        <section className="mb-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <article className="rounded-[30px] border border-white/10 bg-white/[0.03] p-5 panel-border brutalist-shadow md:col-span-2 xl:col-span-2">
-            <p className="text-sm uppercase tracking-[0.55em] text-neonCyan/75">Taller Artesanal</p>
-            <h2 className="text-balance mt-3 max-w-3xl text-3xl font-black uppercase tracking-[0.18em] sm:text-5xl">
-              El antojo entra con luz baja y sale en formato reserva.
-            </h2>
-            <div className="mt-5 h-px w-full bg-gradient-to-r from-neonPink/70 via-white/10 to-neonCyan/70" />
-          </article>
+        <section className="mx-auto flex w-full max-w-7xl flex-col px-4 pb-16 pt-6 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="mb-8 grid gap-4 lg:grid-cols-[1.2fr,0.8fr]"
+          >
+            <div className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-6 backdrop-blur-xl glazed-panel">
+              <p className="text-[0.65rem] uppercase tracking-[0.55em] text-neonCyan/75">Venta inmersiva</p>
+              <h1 className="text-balance mt-4 max-w-4xl text-4xl font-black uppercase tracking-[0.18em] text-white sm:text-6xl">
+                Glaseado oscuro, swipe directo y cierre instantaneo.
+              </h1>
+              <div className="neon-divider mt-6" />
+              <p className="mt-5 max-w-2xl text-sm leading-7 text-white/72 sm:text-base">
+                PWA premium enfocada en conversion movil: micro-carrito sticky, carruseles swipe-first, checkout inteligente y contacto inmediato por WhatsApp.
+              </p>
+            </div>
 
-          <article className="rounded-[30px] border border-white/10 bg-white/[0.03] p-5 panel-border brutalist-shadow">
-            <p className="text-sm uppercase tracking-[0.5em] text-white/55">Compra Rapida</p>
-            <p className="mt-3 text-balance text-lg text-white/80">
-              Tocá el boton neón de cada bloque para sumar productos y cerrá la reserva por WhatsApp cuando quieras.
-            </p>
-          </article>
+            <div className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-6 backdrop-blur-xl glazed-panel">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+                <div>
+                  <p className="text-[0.65rem] uppercase tracking-[0.45em] text-neonPink/75">Optimizacion</p>
+                  <p className="mt-2 text-sm text-white/72">Prioridad a la primera imagen, export estatico y superficies ligeras para mejorar LCP.</p>
+                </div>
+                <div>
+                  <p className="text-[0.65rem] uppercase tracking-[0.45em] text-neonCyan/75">Checkout</p>
+                  <p className="mt-2 text-sm text-white/72">Cantidad, total, retiro, notas extra y mensaje estructurado listo para enviar.</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          <div className="grid gap-6">
+            {products.map((product, productIndex) => {
+              const quantityInCart = cart.find((item) => item.id === product.id)?.quantity ?? 0;
+              const activeIndex = activeIndexes[productIndex] ?? 0;
+              const pulse = activePulseId === product.id;
+
+              return (
+                <motion.article
+                  key={product.id}
+                  initial={{ opacity: 0, y: 18 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.25 }}
+                  transition={{ duration: 0.4, delay: productIndex * 0.03 }}
+                  className="rounded-[2rem] border border-[rgba(255,105,180,0.3)] bg-[rgba(255,255,255,0.03)] p-4 backdrop-blur-[10px] glazed-panel"
+                >
+                  <div className="mb-4 flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-[0.62rem] uppercase tracking-[0.46em] text-white/50">{product.category}</p>
+                      <h2 className="mt-2 text-2xl font-black uppercase tracking-[0.16em] text-white sm:text-3xl">{product.title}</h2>
+                    </div>
+                    <p className="hidden text-xs uppercase tracking-[0.36em] text-white/35 sm:block">{product.priceLabel}</p>
+                  </div>
+
+                  <div className="relative overflow-hidden rounded-[1.6rem] border border-white/10 bg-black/85">
+                    <StockBadge label={product.stockBadge} accent={product.accent} />
+                    <div
+                      ref={(node) => {
+                        trackRefs.current[productIndex] = node;
+                      }}
+                      onScroll={() => onTrackScroll(productIndex)}
+                      className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain scroll-smooth"
+                    >
+                      {product.images.map((src, imageIndex) => (
+                        <div key={`${product.id}-${imageIndex}`} className="relative h-[68vw] min-h-[20rem] w-full flex-none snap-center sm:h-[32rem]">
+                          <Image
+                            src={src}
+                            alt={`${product.title} vista ${imageIndex + 1}`}
+                            fill
+                            priority={productIndex === 0 && imageIndex === 0}
+                            sizes="(max-width: 768px) 100vw, 80vw"
+                            className={`object-cover transition duration-500 ${heroLoaded || productIndex !== 0 ? 'opacity-100' : 'opacity-0'}`}
+                            onLoad={() => {
+                              if (productIndex === 0 && imageIndex === 0) {
+                                setHeroLoaded(true);
+                              }
+                            }}
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/18 to-transparent" />
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2 rounded-full bg-black/55 px-3 py-2 backdrop-blur-md">
+                      {product.images.map((_, bulletIndex) => (
+                        <span
+                          key={`${product.id}-bullet-${bulletIndex}`}
+                          className={`h-1.5 rounded-full transition-all ${bulletIndex === activeIndex ? 'w-8 bg-white' : 'w-2.5 bg-white/28'}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mt-5 flex items-start justify-between gap-4">
+                    <div className="max-w-2xl">
+                      <p className="text-balance text-sm leading-7 text-white/72 sm:text-base">{product.subtitle}</p>
+                      <div className="neon-divider mt-4 max-w-[7rem]" />
+                      <div className="mt-4 flex flex-wrap items-center gap-3">
+                        <p className="text-xl font-semibold text-white">{product.priceLabel}</p>
+                        <span className="rounded-full border border-white/10 px-3 py-1 text-[0.65rem] uppercase tracking-[0.32em] text-white/45">
+                          {quantityInCart > 0 ? `En carrito x${quantityInCart}` : 'Listo para sumar'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <motion.button
+                      type="button"
+                      aria-label={`Agregar ${product.title} al carrito`}
+                      onClick={() => addToCart(product)}
+                      whileTap={{ scale: 0.9 }}
+                      animate={pulse ? { boxShadow: ['0 0 0 1px rgba(255,105,180,0.65)', '0 0 24px rgba(255,105,180,0.7)', '0 0 0 1px rgba(255,105,180,0.65)'] } : undefined}
+                      transition={{ duration: 0.35 }}
+                      className={`mt-1 inline-flex h-14 w-14 flex-none items-center justify-center rounded-full border text-3xl font-light leading-none ${
+                        product.accent === 'pink'
+                          ? 'border-neonPink/80 text-neonPink shadow-button'
+                          : 'border-neonCyan/80 text-neonCyan shadow-[0_0_0_1px_rgba(0,255,255,0.6),0_0_18px_rgba(0,255,255,0.18)]'
+                      }`}
+                    >
+                      +
+                    </motion.button>
+                  </div>
+                </motion.article>
+              );
+            })}
+          </div>
         </section>
 
-        <section className="grid gap-6 sm:gap-7 lg:grid-cols-2 2xl:grid-cols-3">
-          {products.map((product, index) => {
-            const isPink = product.accent === 'pink';
-            const activeIndex = activeIndexes[index];
-            const pulse = activePulseId === product.id ? 'animate-pulseGlow scale-105' : '';
-            const quantityInCart = cart.find((item) => item.id === product.id)?.quantity ?? 0;
+        <AnimatePresence>
+          {cartCount > 0 ? (
+            <motion.button
+              type="button"
+              onClick={() => setCartOpen(true)}
+              aria-label="Abrir modal de reserva"
+              initial={{ opacity: 0, y: 18, x: '-50%' }}
+              animate={{ opacity: 1, y: 0, x: '-50%' }}
+              exit={{ opacity: 0, y: 18, x: '-50%' }}
+              className="fixed bottom-24 left-1/2 z-50 flex w-[min(calc(100%-1.5rem),34rem)] items-center gap-3 rounded-full border border-neonPink/80 bg-black/92 px-4 py-3 text-neonPink shadow-[0_0_0_1px_rgba(255,105,180,0.8),0_0_22px_rgba(255,105,180,0.38)] backdrop-blur-xl sm:bottom-6"
+            >
+              <span className="cart-bubble min-w-10 rounded-full px-3 py-1 text-center text-sm font-black text-black">{cartCount}</span>
+              <span className="flex min-w-0 flex-1 flex-col text-left">
+                <span className="truncate text-[0.62rem] uppercase tracking-[0.32em] text-white/58">Checkout inteligente</span>
+                <span className="truncate text-sm font-black uppercase tracking-[0.12em] text-white">Confirmar reserva por WhatsApp</span>
+              </span>
+              <span className="text-right text-sm font-semibold text-white">{formatPrice(cartTotal)}</span>
+            </motion.button>
+          ) : null}
+        </AnimatePresence>
 
-            return (
-              <article
-                key={product.id}
-                ref={(node) => {
-                  cardRefs.current[index] = node;
-                }}
-                className="group relative overflow-hidden rounded-[32px] border border-white/10 bg-[rgba(12,12,12,0.88)] p-4 panel-border brutalist-shadow"
+        <motion.a
+          href={cartCount > 0 ? undefined : checkoutUrl}
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Reservar por WhatsApp"
+          onClick={(event) => {
+            if (cartCount > 0) {
+              event.preventDefault();
+              setCartOpen(true);
+            }
+          }}
+          animate={{ scale: [1, 1.05, 1] }}
+          transition={{ duration: 1.8, repeat: Number.POSITIVE_INFINITY }}
+          className="fixed bottom-5 right-4 z-50 flex h-16 w-16 items-center justify-center rounded-full border border-[#25D366]/70 bg-black/90 shadow-[0_0_0_1px_rgba(37,211,102,0.7),0_0_22px_rgba(37,211,102,0.32)] sm:right-6"
+        >
+          <WhatsAppIcon />
+        </motion.a>
+
+        <motion.button
+          type="button"
+          aria-label="Abrir CubanitoBot AI"
+          onClick={() => setChatOpen(true)}
+          animate={{ scale: [1, 1.04, 1] }}
+          transition={{ duration: 2.2, repeat: Number.POSITIVE_INFINITY }}
+          className="fixed bottom-5 left-4 z-50 flex h-16 w-16 items-center justify-center rounded-full border border-neonCyan/70 bg-black/90 shadow-[0_0_0_1px_rgba(0,255,255,0.7),0_0_20px_rgba(0,255,255,0.22)] sm:left-6"
+        >
+          <BotIcon />
+        </motion.button>
+
+        <AnimatePresence>
+          {chatOpen ? (
+            <motion.div
+              className="fixed inset-0 z-50 flex items-end justify-center bg-black/82 p-4 backdrop-blur-md sm:items-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 18, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 18, scale: 0.98 }}
+                className="w-full max-w-xl rounded-[2rem] border border-white/10 bg-[rgba(7,7,7,0.98)] p-5 glazed-panel"
               >
-                <div className="relative h-[380px] overflow-hidden rounded-[26px] border border-white/10 bg-black sm:h-[430px]">
-                  {product.images.map((src, imageIndex) => {
-                    const isActive = imageIndex === activeIndex;
+                <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-4">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.45em] text-neonCyan/70">IA de contacto</p>
+                    <h2 className="mt-2 text-2xl font-black uppercase tracking-[0.18em] text-white">CubanitoBot AI</h2>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setChatOpen(false)}
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 text-xl text-white/70 transition hover:border-neonPink/70 hover:text-white"
+                    aria-label="Cerrar modal"
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <div className="mt-5 grid gap-3">
+                  {faqs.map((faq) => {
+                    const active = faq.question === activeFaq.question;
 
                     return (
-                      <div
-                        key={src}
-                        className={`absolute inset-0 transition-all duration-1000 ${isActive ? 'opacity-100' : 'opacity-0 scale-[1.04]'}`}
+                      <button
+                        key={faq.question}
+                        type="button"
+                        onClick={() => setActiveFaq(faq)}
+                        className={`rounded-[1.4rem] border px-4 py-4 text-left text-sm uppercase tracking-[0.15em] transition ${
+                          active
+                            ? 'border-neonPink/75 bg-neonPink/10 text-white shadow-button'
+                            : 'border-white/10 bg-white/[0.03] text-white/75 hover:border-neonCyan/55 hover:bg-neonCyan/5 hover:text-white'
+                        }`}
                       >
-                        <Image
-                          src={src}
-                          alt={`${product.title} vista ${imageIndex + 1}`}
-                          fill
-                          sizes="(max-width: 768px) 100vw, (max-width: 1536px) 50vw, 33vw"
-                          className="object-cover transition-transform duration-700 ease-out"
-                          style={{
-                            transform: `scale(1.1) translate3d(0, ${parallaxOffsets[index]}px, 0)`,
-                          }}
-                          priority={index < 2 && imageIndex === 0}
-                        />
-                      </div>
+                        {faq.question}
+                      </button>
                     );
                   })}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
-                  <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full bg-black/70 px-3 py-1 text-xs uppercase tracking-[0.4em] text-white/70 backdrop-blur-md">
-                    <span className={`inline-block h-2 w-2 rounded-full ${isPink ? 'bg-neonPink shadow-[0_0_12px_rgba(255,105,180,0.9)]' : 'bg-neonCyan shadow-[0_0_12px_rgba(0,255,255,0.9)]'}`} />
-                    {product.category}
+                </div>
+
+                <div className="mt-5 rounded-[1.6rem] border border-neonCyan/25 bg-white/[0.03] p-4">
+                  <p className="text-xs uppercase tracking-[0.45em] text-neonPink/70">Respuesta instantanea</p>
+                  <p className="mt-3 text-balance text-base leading-7 text-white/88">{activeFaq.answer}</p>
+                </div>
+              </motion.div>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {cartOpen ? (
+            <motion.div
+              className="fixed inset-0 z-50 flex items-end justify-center bg-black/82 p-4 backdrop-blur-md sm:items-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 18, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 18, scale: 0.98 }}
+                className="w-full max-w-3xl rounded-[2rem] border border-white/10 bg-[rgba(7,7,7,0.98)] p-5 glazed-panel"
+              >
+                <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-4">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.45em] text-neonPink/70">Checkout neon</p>
+                    <h2 className="mt-2 text-2xl font-black uppercase tracking-[0.16em] text-white">Revisa tu reserva</h2>
                   </div>
-                  <div className="absolute bottom-4 left-4 flex gap-2">
-                    {product.images.map((_, bulletIndex) => (
-                      <span
-                        key={`${product.id}-${bulletIndex}`}
-                        className={`h-1.5 rounded-full transition-all duration-500 ${bulletIndex === activeIndex ? 'w-8 bg-white' : 'w-3 bg-white/30'}`}
-                      />
+                  <button
+                    type="button"
+                    onClick={() => setCartOpen(false)}
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 text-xl text-white/70 transition hover:border-neonPink/70 hover:text-white"
+                    aria-label="Cerrar carrito"
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <div className="mt-5 grid gap-5 lg:grid-cols-[1.15fr,0.85fr]">
+                  <div className="space-y-3">
+                    {cart.map((item) => (
+                      <div key={item.id} className="rounded-[1.6rem] border border-white/10 bg-white/[0.03] p-4">
+                        <div className="flex items-start justify-between gap-4">
+                          <div>
+                            <p className="text-sm font-black uppercase tracking-[0.14em] text-white">{item.name}</p>
+                            <p className="mt-2 text-xs uppercase tracking-[0.3em] text-white/45">Subtotal {formatPrice(item.price * item.quantity)}</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeFromCart(item.id)}
+                            aria-label={`Eliminar ${item.name} del carrito`}
+                            className="inline-flex rounded-full border border-white/10 px-3 py-1 text-[0.65rem] uppercase tracking-[0.28em] text-white/55 transition hover:border-neonPink/60 hover:text-white"
+                          >
+                            Quitar
+                          </button>
+                        </div>
+
+                        <div className="mt-4 flex items-center justify-between gap-3">
+                          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/40 px-2 py-2">
+                            <button
+                              type="button"
+                              onClick={() => decreaseQuantity(item.id)}
+                              aria-label={`Restar cantidad de ${item.name}`}
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-xl text-white/80 transition hover:border-neonPink/60 hover:text-white"
+                            >
+                              −
+                            </button>
+                            <span className="min-w-8 text-center text-sm font-black text-white">{item.quantity}</span>
+                            <button
+                              type="button"
+                              onClick={() => increaseQuantity(item.id)}
+                              aria-label={`Sumar cantidad de ${item.name}`}
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-xl text-white/80 transition hover:border-neonCyan/60 hover:text-white"
+                            >
+                              +
+                            </button>
+                          </div>
+
+                          <p className="text-sm font-semibold text-white/80">Unitario {formatPrice(item.price)}</p>
+                        </div>
+                      </div>
                     ))}
                   </div>
-                </div>
 
-                <div className="mt-5 flex items-start justify-between gap-4">
-                  <div>
-                    <h3 className="text-balance text-2xl font-black uppercase tracking-[0.16em] text-white">
-                      {product.title}
-                    </h3>
-                    <p className="mt-2 text-sm text-white/70">{product.subtitle}</p>
-                    <div className="mt-4 h-px w-20 bg-gradient-to-r from-neonPink/60 to-neonCyan/60" />
-                    <p className="mt-4 text-xl font-semibold text-white">{product.priceLabel}</p>
-                    <p className="mt-2 text-xs uppercase tracking-[0.34em] text-white/45">
-                      {quantityInCart > 0 ? `En carrito x${quantityInCart}` : 'Listo para sumar'}
-                    </p>
-                  </div>
+                  <div className="rounded-[1.6rem] border border-neonCyan/20 bg-white/[0.03] p-4">
+                    <p className="text-xs uppercase tracking-[0.4em] text-neonCyan/70">Datos de retiro</p>
 
-                  <button
-                    type="button"
-                    aria-label={`Agregar ${product.title} al carrito`}
-                    onClick={() => addToCart(product)}
-                    className={`mt-1 inline-flex h-14 w-14 flex-none items-center justify-center rounded-full border text-3xl font-light leading-none transition duration-300 hover:-translate-y-1 hover:scale-105 ${pulse} ${
-                      isPink
-                        ? 'border-neonPink/80 text-neonPink shadow-button hover:bg-neonPink/10 active:shadow-[0_0_0_1px_rgba(255,105,180,0.85),0_0_26px_rgba(255,105,180,0.75),0_0_42px_rgba(0,255,255,0.22)]'
-                        : 'border-neonCyan/80 text-neonCyan shadow-button hover:bg-neonCyan/10 active:shadow-[0_0_0_1px_rgba(0,255,255,0.85),0_0_26px_rgba(0,255,255,0.65),0_0_36px_rgba(255,105,180,0.2)]'
-                    }`}
-                  >
-                    +
-                  </button>
-                </div>
-              </article>
-            );
-          })}
-        </section>
-      </div>
+                    <div className="mt-4 grid gap-3">
+                      <label className="grid gap-2 text-xs uppercase tracking-[0.24em] text-white/55">
+                        Nombre
+                        <input
+                          aria-label="Nombre"
+                          value={customerDetails.name}
+                          onChange={(event) => updateCustomerDetail('name', event.target.value)}
+                          placeholder="Tu nombre"
+                          className="rounded-[1.15rem] border border-white/10 bg-black/40 px-4 py-3 text-sm normal-case tracking-normal text-white outline-none transition placeholder:text-white/25 focus:border-neonPink/60"
+                        />
+                      </label>
 
-      {cartCount > 0 ? (
-        <button
-          type="button"
-          onClick={() => setCartOpen(true)}
-          aria-label="Abrir modal de reserva"
-          className="fixed bottom-24 left-1/2 z-40 flex w-[min(calc(100%-1.5rem),32rem)] -translate-x-1/2 items-center gap-3 rounded-full border border-neonPink/80 bg-black/90 px-4 py-3 text-neonPink shadow-[0_0_0_1px_rgba(255,105,180,0.8),0_0_22px_rgba(255,105,180,0.38)] backdrop-blur-xl transition duration-300 hover:scale-[1.02] hover:shadow-[0_0_0_1px_rgba(255,105,180,0.9),0_0_30px_rgba(255,105,180,0.48)] sm:bottom-6"
-        >
-          <span className="inline-flex min-w-10 items-center justify-center rounded-full bg-neonPink px-3 py-1 text-sm font-black text-black">
-            {cartCount}
-          </span>
-          <span className="flex min-w-0 flex-1 flex-col">
-            <span className="truncate text-xs uppercase tracking-[0.32em] text-white/60">Brutalismo Neon</span>
-            <span className="truncate text-sm font-black uppercase tracking-[0.12em] text-white">Revisar carrito y confirmar reserva</span>
-          </span>
-          <span className="text-right text-sm font-semibold text-white">
-            {formatPrice(cartTotal)}
-          </span>
-        </button>
-      ) : null}
+                      <label className="grid gap-2 text-xs uppercase tracking-[0.24em] text-white/55">
+                        Direccion o punto de retiro
+                        <input
+                          aria-label="Direccion o punto de retiro"
+                          value={customerDetails.address}
+                          onChange={(event) => updateCustomerDetail('address', event.target.value)}
+                          placeholder="Barrio, punto de entrega o retiro"
+                          className="rounded-[1.15rem] border border-white/10 bg-black/40 px-4 py-3 text-sm normal-case tracking-normal text-white outline-none transition placeholder:text-white/25 focus:border-neonPink/60"
+                        />
+                      </label>
 
-      <a
-        href={cartCount > 0 ? undefined : checkoutUrl}
-        target="_blank"
-        rel="noreferrer"
-        aria-label="Reservar por WhatsApp"
-        onClick={(event) => {
-          if (cartCount > 0) {
-            event.preventDefault();
-            setCartOpen(true);
-          }
-        }}
-        className="fixed bottom-5 right-4 z-40 flex h-16 w-16 items-center justify-center rounded-full border border-[#25D366]/70 bg-black/90 shadow-[0_0_0_1px_rgba(37,211,102,0.7),0_0_18px_rgba(37,211,102,0.25)] transition duration-300 hover:-translate-y-1 hover:scale-105 sm:right-6"
-      >
-        <svg viewBox="0 0 24 24" className="h-7 w-7 fill-[#25D366]" aria-hidden="true">
-          <path d="M19.05 4.94A9.87 9.87 0 0 0 12.04 2C6.56 2 2.1 6.46 2.1 11.94c0 1.75.46 3.47 1.33 4.99L2 22l5.23-1.37a9.92 9.92 0 0 0 4.8 1.23h.01c5.48 0 9.94-4.46 9.95-9.94A9.86 9.86 0 0 0 19.05 4.94Zm-7 15.24h-.01a8.23 8.23 0 0 1-4.18-1.14l-.3-.18-3.1.81.83-3.02-.2-.31a8.23 8.23 0 0 1-1.27-4.4c0-4.56 3.71-8.27 8.28-8.27a8.2 8.2 0 0 1 5.85 2.42 8.2 8.2 0 0 1 2.42 5.86c0 4.56-3.71 8.27-8.27 8.27Zm4.54-6.16c-.25-.13-1.47-.73-1.69-.82-.23-.08-.39-.13-.56.13-.17.25-.65.82-.8.99-.15.17-.29.19-.54.06-.25-.13-1.04-.38-1.98-1.2-.73-.65-1.22-1.44-1.37-1.68-.15-.25-.02-.38.11-.51.11-.11.25-.29.38-.44.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.76-1.84-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1s.9 2.45 1.03 2.62c.13.17 1.76 2.68 4.26 3.76.6.26 1.07.41 1.44.53.61.19 1.16.16 1.59.1.49-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.06-.1-.23-.15-.48-.28Z" />
-        </svg>
-      </a>
+                      <label className="grid gap-2 text-xs uppercase tracking-[0.24em] text-white/55">
+                        Fecha de retiro
+                        <input
+                          aria-label="Fecha de retiro"
+                          value={customerDetails.pickupDate}
+                          onChange={(event) => updateCustomerDetail('pickupDate', event.target.value)}
+                          placeholder="Ej: Sabado 18:00"
+                          className="rounded-[1.15rem] border border-white/10 bg-black/40 px-4 py-3 text-sm normal-case tracking-normal text-white outline-none transition placeholder:text-white/25 focus:border-neonPink/60"
+                        />
+                      </label>
 
-      <button
-        type="button"
-        aria-label="Abrir CubanitoBot AI"
-        onClick={() => setChatOpen(true)}
-        className="fixed bottom-5 left-4 z-40 flex h-16 w-16 items-center justify-center rounded-full border border-neonCyan/70 bg-black/90 shadow-[0_0_0_1px_rgba(0,255,255,0.7),0_0_18px_rgba(0,255,255,0.2)] transition duration-300 hover:-translate-y-1 hover:scale-105 sm:left-6"
-      >
-        <svg viewBox="0 0 24 24" className="h-7 w-7 stroke-neonCyan" fill="none" strokeWidth="1.8" aria-hidden="true">
-          <path d="M12 3v2" strokeLinecap="round" />
-          <path d="M8 8.5h8" strokeLinecap="round" />
-          <rect x="5" y="6" width="14" height="11" rx="4" />
-          <path d="M9 12h.01M15 12h.01" strokeLinecap="round" />
-          <path d="M9.5 15c.73.67 1.51 1 2.5 1 1 0 1.77-.33 2.5-1" strokeLinecap="round" />
-          <path d="M8 17v4l3-2h2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </button>
-
-      {chatOpen ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 p-4 backdrop-blur-md sm:items-center">
-          <div className="relative w-full max-w-xl overflow-hidden rounded-[30px] border border-white/10 bg-[rgba(7,7,7,0.98)] p-5 panel-border brutalist-shadow">
-            <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-4">
-              <div>
-                <p className="text-xs uppercase tracking-[0.45em] text-neonCyan/70">Asistente Instantaneo</p>
-                <h2 className="mt-2 text-2xl font-black uppercase tracking-[0.18em] text-white">
-                  CubanitoBot AI
-                </h2>
-              </div>
-              <button
-                type="button"
-                onClick={() => setChatOpen(false)}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 text-xl text-white/70 transition hover:border-neonPink/70 hover:text-white"
-                aria-label="Cerrar modal"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="mt-5 grid gap-3">
-              {faqs.map((faq) => {
-                const active = faq.question === activeFaq.question;
-
-                return (
-                  <button
-                    key={faq.question}
-                    type="button"
-                    onClick={() => setActiveFaq(faq)}
-                    className={`rounded-[20px] border px-4 py-4 text-left text-sm uppercase tracking-[0.16em] transition ${
-                      active
-                        ? 'border-neonPink/80 bg-neonPink/10 text-white shadow-button'
-                        : 'border-white/10 bg-white/[0.03] text-white/75 hover:border-neonCyan/50 hover:bg-neonCyan/5 hover:text-white'
-                    }`}
-                  >
-                    {faq.question}
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="mt-5 rounded-[24px] border border-neonCyan/25 bg-white/[0.03] p-4">
-              <p className="text-xs uppercase tracking-[0.45em] text-neonPink/70">Respuesta inmediata</p>
-              <p className="mt-3 text-balance text-base leading-7 text-white/88">{activeFaq.answer}</p>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {cartOpen ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 p-4 backdrop-blur-md sm:items-center">
-          <div className="relative w-full max-w-2xl overflow-hidden rounded-[30px] border border-white/10 bg-[rgba(7,7,7,0.98)] p-5 panel-border brutalist-shadow">
-            <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-4">
-              <div>
-                <p className="text-xs uppercase tracking-[0.45em] text-neonPink/70">Checkout Neon</p>
-                <h2 className="mt-2 text-2xl font-black uppercase tracking-[0.16em] text-white">
-                  Revisa tu reserva
-                </h2>
-              </div>
-              <button
-                type="button"
-                onClick={() => setCartOpen(false)}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 text-xl text-white/70 transition hover:border-neonPink/70 hover:text-white"
-                aria-label="Cerrar carrito"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="mt-5 grid gap-5 lg:grid-cols-[1.2fr,0.9fr]">
-              <div className="space-y-3">
-                {cart.map((item) => (
-                  <div
-                    key={item.id}
-                    className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className="text-sm font-black uppercase tracking-[0.14em] text-white">{item.name}</p>
-                        <p className="mt-2 text-xs uppercase tracking-[0.3em] text-white/45">
-                          Subtotal {formatPrice(item.price * item.quantity)}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => removeFromCart(item.id)}
-                        aria-label={`Eliminar ${item.name} del carrito`}
-                        className="inline-flex rounded-full border border-white/10 px-3 py-1 text-[0.65rem] uppercase tracking-[0.28em] text-white/55 transition hover:border-neonPink/60 hover:text-white"
-                      >
-                        Quitar
-                      </button>
+                      <label className="grid gap-2 text-xs uppercase tracking-[0.24em] text-white/55">
+                        Notas extra
+                        <textarea
+                          aria-label="Notas extra"
+                          value={customerDetails.notes}
+                          onChange={(event) => updateCustomerDetail('notes', event.target.value)}
+                          placeholder="Ej: sin azucar glass, para cumple, entrega urgente"
+                          rows={4}
+                          className="resize-none rounded-[1.15rem] border border-white/10 bg-black/40 px-4 py-3 text-sm normal-case tracking-normal text-white outline-none transition placeholder:text-white/25 focus:border-neonPink/60"
+                        />
+                      </label>
                     </div>
 
-                    <div className="mt-4 flex items-center justify-between gap-3">
-                      <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/40 px-2 py-2">
-                        <button
-                          type="button"
-                          onClick={() => decreaseQuantity(item.id)}
-                          aria-label={`Restar cantidad de ${item.name}`}
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-xl text-white/80 transition hover:border-neonPink/60 hover:text-white"
-                        >
-                          −
-                        </button>
-                        <span className="min-w-8 text-center text-sm font-black text-white">{item.quantity}</span>
-                        <button
-                          type="button"
-                          onClick={() => increaseQuantity(item.id)}
-                          aria-label={`Sumar cantidad de ${item.name}`}
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-xl text-white/80 transition hover:border-neonCyan/60 hover:text-white"
-                        >
-                          +
-                        </button>
+                    <div className="mt-5 rounded-[1.3rem] border border-white/10 bg-black/30 p-4">
+                      <div className="flex items-center justify-between gap-3 text-xs uppercase tracking-[0.3em] text-white/45">
+                        <span>Productos</span>
+                        <span>{cartCount}</span>
                       </div>
-
-                      <p className="text-sm font-semibold text-white/80">Unitario {formatPrice(item.price)}</p>
+                      <div className="mt-3 flex items-center justify-between gap-3 text-sm font-semibold text-white">
+                        <span>Total</span>
+                        <span>{formatPrice(cartTotal)}</span>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
 
-              <div className="rounded-[26px] border border-neonCyan/20 bg-white/[0.03] p-4">
-                <p className="text-xs uppercase tracking-[0.4em] text-neonCyan/70">Datos de retiro</p>
-
-                <div className="mt-4 grid gap-3">
-                  <label className="grid gap-2 text-xs uppercase tracking-[0.24em] text-white/55">
-                    Nombre
-                    <input
-                      value={customerDetails.name}
-                      onChange={(event) => updateCustomerDetail('name', event.target.value)}
-                      placeholder="Tu nombre"
-                      className="rounded-[18px] border border-white/10 bg-black/40 px-4 py-3 text-sm normal-case tracking-normal text-white outline-none transition placeholder:text-white/25 focus:border-neonPink/60"
-                    />
-                  </label>
-
-                  <label className="grid gap-2 text-xs uppercase tracking-[0.24em] text-white/55">
-                    Direccion o punto de retiro
-                    <input
-                      value={customerDetails.address}
-                      onChange={(event) => updateCustomerDetail('address', event.target.value)}
-                      placeholder="Barrio, punto de entrega o retiro"
-                      className="rounded-[18px] border border-white/10 bg-black/40 px-4 py-3 text-sm normal-case tracking-normal text-white outline-none transition placeholder:text-white/25 focus:border-neonPink/60"
-                    />
-                  </label>
-
-                  <label className="grid gap-2 text-xs uppercase tracking-[0.24em] text-white/55">
-                    Fecha de retiro
-                    <input
-                      value={customerDetails.pickupDate}
-                      onChange={(event) => updateCustomerDetail('pickupDate', event.target.value)}
-                      placeholder="Ej: Sabado 18:00"
-                      className="rounded-[18px] border border-white/10 bg-black/40 px-4 py-3 text-sm normal-case tracking-normal text-white outline-none transition placeholder:text-white/25 focus:border-neonPink/60"
-                    />
-                  </label>
-
-                  <label className="grid gap-2 text-xs uppercase tracking-[0.24em] text-white/55">
-                    Notas extra
-                    <textarea
-                      value={customerDetails.notes}
-                      onChange={(event) => updateCustomerDetail('notes', event.target.value)}
-                      placeholder="Ej: sin azucar glass, para cumple, entrega urgente"
-                      rows={4}
-                      className="resize-none rounded-[18px] border border-white/10 bg-black/40 px-4 py-3 text-sm normal-case tracking-normal text-white outline-none transition placeholder:text-white/25 focus:border-neonPink/60"
-                    />
-                  </label>
-                </div>
-
-                <div className="mt-5 rounded-[20px] border border-white/10 bg-black/30 p-4">
-                  <div className="flex items-center justify-between gap-3 text-xs uppercase tracking-[0.3em] text-white/45">
-                    <span>Productos</span>
-                    <span>{cartCount}</span>
-                  </div>
-                  <div className="mt-3 flex items-center justify-between gap-3 text-sm font-semibold text-white">
-                    <span>Total</span>
-                    <span>{formatPrice(cartTotal)}</span>
+                    <a
+                      href={checkoutUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label="Confirmar reserva por WhatsApp"
+                      className="mt-5 inline-flex w-full items-center justify-center rounded-full border border-neonPink/80 bg-black px-5 py-4 text-sm font-black uppercase tracking-[0.14em] text-neonPink shadow-[0_0_0_1px_rgba(255,105,180,0.82),0_0_18px_rgba(255,105,180,0.34)] transition hover:scale-[1.01] hover:text-white"
+                    >
+                      Confirmar reserva por WhatsApp
+                    </a>
                   </div>
                 </div>
-
-                <a
-                  href={checkoutUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label="Confirmar reserva por WhatsApp"
-                  className="mt-5 inline-flex w-full items-center justify-center rounded-full border border-neonPink/80 bg-black px-5 py-4 text-sm font-black uppercase tracking-[0.14em] text-neonPink shadow-[0_0_0_1px_rgba(255,105,180,0.82),0_0_18px_rgba(255,105,180,0.34)] transition hover:scale-[1.01] hover:text-white"
-                >
-                  Confirmar reserva por WhatsApp
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : null}
-    </main>
+              </motion.div>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+      </main>
+    </>
   );
 }

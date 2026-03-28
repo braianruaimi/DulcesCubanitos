@@ -1,18 +1,19 @@
 {
-  "name": "Cubanitos Dulces",
+  "name": "DulcesCubanitos",
   "short_name": "Cubanitos",
-  "description": "Venta inmersiva de cubanitos artesanales con reservas rapidas y experiencia neon.",
+  "description": "PWA inmersiva de DulcesCubanitos con checkout inteligente y experiencia Dark Sugar Neon.",
   "start_url": "/DulcesCubanitos/",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",
   "lang": "es",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "/DulcesCubanitos/icons/icon-192.svg",
       "sizes": "192x192",
       "type": "image/svg+xml",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
       "src": "/DulcesCubanitos/icons/icon-512.svg",

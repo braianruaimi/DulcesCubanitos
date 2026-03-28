@@ -1,25 +1,25 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
+import { Space_Grotesk } from 'next/font/google';
 
 import './globals.css';
 import { ServiceWorkerRegister } from '@/components/service-worker-register';
 
 const basePath = '/DulcesCubanitos';
 
-const inter = Inter({
+const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
   display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: 'Cubanitos Dulces | Dark Sugar Neon',
-  description: 'PWA de venta inmersiva para Cubanitos Dulces con experiencia neon, carrito integrado y reservas rápidas.',
+  title: 'DulcesCubanitos | Dark Sugar Neon',
+  description: 'PWA inmersiva de DulcesCubanitos con carruseles swipe-first, micro-carrito sticky, chatbot y checkout inteligente por WhatsApp.',
   manifest: `${basePath}/manifest.json`,
-  applicationName: 'Cubanitos Dulces',
+  applicationName: 'DulcesCubanitos',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'Cubanitos Dulces',
+    title: 'DulcesCubanitos',
   },
   icons: {
     icon: [
@@ -42,7 +42,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className={inter.className}>
+      <body className={spaceGrotesk.className}>
         <ServiceWorkerRegister />
         {children}
       </body>
