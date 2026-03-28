@@ -4,6 +4,8 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { ServiceWorkerRegister } from '@/components/service-worker-register';
 
+const basePath = '/CubanitosDulces';
+
 const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
@@ -12,7 +14,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'Cubanitos Dulces | Dark Sugar Neon',
   description: 'PWA de venta inmersiva para Cubanitos Dulces con experiencia neon, carrito integrado y reservas rápidas.',
-  manifest: '/manifest.json',
+  manifest: `${basePath}/manifest.json`,
   applicationName: 'Cubanitos Dulces',
   appleWebApp: {
     capable: true,
@@ -21,10 +23,10 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/icons/icon-192.svg', type: 'image/svg+xml' },
-      { url: '/icons/icon-512.svg', type: 'image/svg+xml' },
+      { url: `${basePath}/icons/icon-192.svg`, type: 'image/svg+xml' },
+      { url: `${basePath}/icons/icon-512.svg`, type: 'image/svg+xml' },
     ],
-    apple: [{ url: '/icons/icon-192.svg', type: 'image/svg+xml' }],
+    apple: [{ url: `${basePath}/icons/icon-192.svg`, type: 'image/svg+xml' }],
   },
 };
 

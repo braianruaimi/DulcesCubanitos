@@ -18,6 +18,10 @@ type Faq = {
   answer: string;
 };
 
+const basePath = '/CubanitosDulces';
+
+const withBasePath = (path: string) => `${basePath}${path}`;
+
 const products: Product[] = [
   {
     id: 'clasicos',
@@ -25,7 +29,7 @@ const products: Product[] = [
     title: 'Dulce de Leche Rush',
     subtitle: 'Crujiente fino, relleno al instante y golpe final de azucar glass.',
     price: '$3.200',
-    images: ['/images/cubanito-neon-1.svg', '/images/cubanito-neon-2.svg', '/images/cubanito-neon-3.svg'],
+    images: [withBasePath('/images/cubanito-neon-1.svg'), withBasePath('/images/cubanito-neon-2.svg'), withBasePath('/images/cubanito-neon-3.svg')],
     accent: 'pink',
   },
   {
@@ -34,7 +38,7 @@ const products: Product[] = [
     title: 'Hazelnut Pulse',
     subtitle: 'Nocciola intensa con textura cremosa y remate de cacao oscuro.',
     price: '$4.100',
-    images: ['/images/cubanito-neon-2.svg', '/images/cubanito-neon-3.svg', '/images/cubanito-neon-1.svg'],
+    images: [withBasePath('/images/cubanito-neon-2.svg'), withBasePath('/images/cubanito-neon-3.svg'), withBasePath('/images/cubanito-neon-1.svg')],
     accent: 'cyan',
   },
   {
@@ -43,7 +47,7 @@ const products: Product[] = [
     title: 'Pink Citrus Voltage',
     subtitle: 'Crema citrica brillante con un acabado fresco y electrico.',
     price: '$4.600',
-    images: ['/images/cubanito-neon-3.svg', '/images/cubanito-neon-1.svg', '/images/cubanito-neon-2.svg'],
+    images: [withBasePath('/images/cubanito-neon-3.svg'), withBasePath('/images/cubanito-neon-1.svg'), withBasePath('/images/cubanito-neon-2.svg')],
     accent: 'pink',
   },
   {
@@ -52,7 +56,7 @@ const products: Product[] = [
     title: 'Cacao Obsidiana',
     subtitle: 'Chocolate amargo sedoso, capas finas y un contraste profundo.',
     price: '$4.500',
-    images: ['/images/cubanito-neon-1.svg', '/images/cubanito-neon-3.svg', '/images/cubanito-neon-2.svg'],
+    images: [withBasePath('/images/cubanito-neon-1.svg'), withBasePath('/images/cubanito-neon-3.svg'), withBasePath('/images/cubanito-neon-2.svg')],
     accent: 'cyan',
   },
   {
@@ -61,7 +65,7 @@ const products: Product[] = [
     title: 'Plant Based Glow',
     subtitle: 'Version vegana con crema de coco tostado y vainilla limpia.',
     price: '$4.000',
-    images: ['/images/cubanito-neon-2.svg', '/images/cubanito-neon-1.svg', '/images/cubanito-neon-3.svg'],
+    images: [withBasePath('/images/cubanito-neon-2.svg'), withBasePath('/images/cubanito-neon-1.svg'), withBasePath('/images/cubanito-neon-3.svg')],
     accent: 'pink',
   },
   {
@@ -70,7 +74,7 @@ const products: Product[] = [
     title: 'Pocket Crunch',
     subtitle: 'Pack de mini cubanitos para mesa dulce, eventos y antojos serios.',
     price: '$2.700',
-    images: ['/images/cubanito-neon-3.svg', '/images/cubanito-neon-2.svg', '/images/cubanito-neon-1.svg'],
+    images: [withBasePath('/images/cubanito-neon-3.svg'), withBasePath('/images/cubanito-neon-2.svg'), withBasePath('/images/cubanito-neon-1.svg')],
     accent: 'cyan',
   },
   {
@@ -79,7 +83,7 @@ const products: Product[] = [
     title: 'Neon Signature Box',
     subtitle: 'Seleccion del taller con rellenos premium y acabado de temporada.',
     price: '$5.200',
-    images: ['/images/cubanito-neon-1.svg', '/images/cubanito-neon-2.svg', '/images/cubanito-neon-3.svg'],
+    images: [withBasePath('/images/cubanito-neon-1.svg'), withBasePath('/images/cubanito-neon-2.svg'), withBasePath('/images/cubanito-neon-3.svg')],
     accent: 'pink',
   },
 ];
