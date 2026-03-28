@@ -11,7 +11,8 @@ type Product = {
   category: string;
   title: string;
   subtitle: string;
-  priceLabel: string;
+  primaryPriceLabel: string;
+  secondaryPriceLabel: string;
   priceValue: number;
   images: string[];
   stockBadge: string;
@@ -36,37 +37,60 @@ const customerStorageKey = 'cubanitos-dulces-customer';
 
 const withBasePath = (path: string) => `${basePath}${path}`;
 
+const realCarouselImages = [
+  withBasePath('/images/cubanito.jpg'),
+  withBasePath('/images/cubanito%20noche.jpg'),
+  withBasePath('/images/cubanito%20dulce.jpg'),
+];
+
+const rotatedCarouselImages = [
+  realCarouselImages,
+  [realCarouselImages[1], realCarouselImages[2], realCarouselImages[0]],
+  [realCarouselImages[2], realCarouselImages[0], realCarouselImages[1]],
+];
+
+const wholesaleOffer = {
+  title: 'Venta Mayorista',
+  subtitle: 'Obleas de 18 cm por kilo para produccion, mesas dulces y reventa.',
+  detail: 'Obleas de 18 cm x 1kg',
+  units: 'Entran 45u aproximadamente',
+  priceLabel: '$15.000',
+};
+
 const products: Product[] = [
   {
     id: 'clasicos',
     category: 'Clasicos',
     title: 'Cubanito Clasico',
-    subtitle: 'Relleno brillante de dulce de leche, crocante fino y acabado de azucar glass.',
-    priceLabel: '$3.200',
-    priceValue: 3200,
-    images: [withBasePath('/images/cubanito-neon-1.svg'), withBasePath('/images/cubanito-neon-2.svg'), withBasePath('/images/cubanito-neon-3.svg')],
+    subtitle: 'Oblea de 18 cm sin baño, rellena de dulce de leche.',
+    primaryPriceLabel: 'x12 u $10.000',
+    secondaryPriceLabel: 'x6 u $5.000',
+    priceValue: 10000,
+    images: rotatedCarouselImages[0],
     stockBadge: '🔥 Sale en 1h',
     accent: 'pink',
   },
   {
     id: 'premium-nocciola',
     category: 'Premium Nocciola',
-    title: 'Cubanito Nutella',
-    subtitle: 'Nocciola intensa, textura cremosa y un golpe final de cacao oscuro.',
-    priceLabel: '$4.100',
-    priceValue: 4100,
-    images: [withBasePath('/images/cubanito-neon-2.svg'), withBasePath('/images/cubanito-neon-3.svg'), withBasePath('/images/cubanito-neon-1.svg')],
+    title: 'Cubanitos Surtidos',
+    subtitle: '18 cm bañados en chocolate blanco o negro y rellenos de dulce de leche. Toppin, crocante, cereal, coco, rockler, solo baño.',
+    primaryPriceLabel: 'x12 u $15.000',
+    secondaryPriceLabel: 'x6 u $7.500',
+    priceValue: 15000,
+    images: rotatedCarouselImages[1],
     stockBadge: 'Solo 10 unidades',
     accent: 'cyan',
   },
   {
     id: 'edicion-limitada',
     category: 'Edicion Limitada',
-    title: 'Pink Citrus Voltage',
-    subtitle: 'Crema citrica electrica con brillo fresco y salida aromatica precisa.',
-    priceLabel: '$4.600',
-    priceValue: 4600,
-    images: [withBasePath('/images/cubanito-neon-3.svg'), withBasePath('/images/cubanito-neon-1.svg'), withBasePath('/images/cubanito-neon-2.svg')],
+    title: 'Cubanitos Helados',
+    subtitle: '10 cm, bañados en chocolate con leche y rellenos de helado.',
+    primaryPriceLabel: 'x12 u $20.000',
+    secondaryPriceLabel: 'x6 u $10.000',
+    priceValue: 20000,
+    images: rotatedCarouselImages[2],
     stockBadge: '🔥 Batch del dia',
     accent: 'pink',
   },
@@ -75,9 +99,10 @@ const products: Product[] = [
     category: 'Black Label',
     title: 'Cacao Obsidiana',
     subtitle: 'Chocolate amargo sedoso, capas finas y contraste profundo.',
-    priceLabel: '$4.500',
+    primaryPriceLabel: '$4.500',
+    secondaryPriceLabel: 'Pack especial',
     priceValue: 4500,
-    images: [withBasePath('/images/cubanito-neon-1.svg'), withBasePath('/images/cubanito-neon-3.svg'), withBasePath('/images/cubanito-neon-2.svg')],
+    images: rotatedCarouselImages[0],
     stockBadge: 'Solo hoy',
     accent: 'cyan',
   },
@@ -86,9 +111,10 @@ const products: Product[] = [
     category: 'Veganos',
     title: 'Plant Based Glow',
     subtitle: 'Version vegetal con coco tostado y vainilla limpia, lista para envio rapido.',
-    priceLabel: '$4.000',
+    primaryPriceLabel: '$4.000',
+    secondaryPriceLabel: 'Pack especial',
     priceValue: 4000,
-    images: [withBasePath('/images/cubanito-neon-2.svg'), withBasePath('/images/cubanito-neon-1.svg'), withBasePath('/images/cubanito-neon-3.svg')],
+    images: rotatedCarouselImages[1],
     stockBadge: '🌿 Sale en 2h',
     accent: 'pink',
   },
@@ -97,9 +123,10 @@ const products: Product[] = [
     category: 'Mini Bites',
     title: 'Pocket Crunch',
     subtitle: 'Mini cubanitos para mesas dulces, eventos y antojos urgentes.',
-    priceLabel: '$2.700',
+    primaryPriceLabel: '$2.700',
+    secondaryPriceLabel: 'Pack especial',
     priceValue: 2700,
-    images: [withBasePath('/images/cubanito-neon-3.svg'), withBasePath('/images/cubanito-neon-2.svg'), withBasePath('/images/cubanito-neon-1.svg')],
+    images: rotatedCarouselImages[2],
     stockBadge: 'Ultimos packs',
     accent: 'cyan',
   },
@@ -108,9 +135,10 @@ const products: Product[] = [
     category: 'Signature Drops',
     title: 'Neon Signature Box',
     subtitle: 'Curaduria premium del taller con acabados de temporada y textura glaseada.',
-    priceLabel: '$5.200',
+    primaryPriceLabel: '$5.200',
+    secondaryPriceLabel: 'Pack premium',
     priceValue: 5200,
-    images: [withBasePath('/images/cubanito-neon-1.svg'), withBasePath('/images/cubanito-neon-2.svg'), withBasePath('/images/cubanito-neon-3.svg')],
+    images: rotatedCarouselImages[0],
     stockBadge: 'Reserva express',
     accent: 'pink',
   },
@@ -566,7 +594,10 @@ export function ImmersiveStore() {
                       <p className="text-[0.62rem] uppercase tracking-[0.46em] text-white/50">{product.category}</p>
                       <h2 className="mt-2 text-2xl font-black uppercase tracking-[0.16em] text-white sm:text-3xl">{product.title}</h2>
                     </div>
-                    <p className="hidden text-xs uppercase tracking-[0.36em] text-white/35 sm:block">{product.priceLabel}</p>
+                    <div className="hidden text-right sm:block">
+                      <p className="text-xs uppercase tracking-[0.36em] text-white/35">{product.primaryPriceLabel}</p>
+                      <p className="mt-1 text-[0.62rem] uppercase tracking-[0.28em] text-white/45">{product.secondaryPriceLabel}</p>
+                    </div>
                   </div>
 
                   <div className="relative overflow-hidden rounded-[1.6rem] border border-white/10 bg-black/85">
@@ -613,7 +644,10 @@ export function ImmersiveStore() {
                       <p className="text-balance text-sm leading-7 text-white/72 sm:text-base">{product.subtitle}</p>
                       <div className="neon-divider mt-4 max-w-[7rem]" />
                       <div className="mt-4 flex flex-wrap items-center gap-3">
-                        <p className="text-xl font-semibold text-white">{product.priceLabel}</p>
+                        <div>
+                          <p className="text-xl font-semibold text-white">{product.primaryPriceLabel}</p>
+                          <p className="mt-1 text-xs uppercase tracking-[0.28em] text-white/45">{product.secondaryPriceLabel}</p>
+                        </div>
                         <span className="rounded-full border border-white/10 px-3 py-1 text-[0.65rem] uppercase tracking-[0.32em] text-white/45">
                           {quantityInCart > 0 ? `En carrito x${quantityInCart}` : 'Listo para sumar'}
                         </span>
@@ -640,6 +674,21 @@ export function ImmersiveStore() {
               );
             })}
           </div>
+
+          <section className="mt-8 rounded-[2rem] border border-neonCyan/25 bg-white/[0.03] p-5 glazed-panel">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div className="max-w-3xl">
+                <p className="text-[0.65rem] uppercase tracking-[0.5em] text-neonCyan/75">{wholesaleOffer.title}</p>
+                <h2 className="mt-3 text-2xl font-black uppercase tracking-[0.16em] text-white sm:text-3xl">{wholesaleOffer.detail}</h2>
+                <p className="mt-3 text-sm leading-7 text-white/72 sm:text-base">{wholesaleOffer.subtitle}</p>
+              </div>
+
+              <div className="rounded-[1.5rem] border border-white/10 bg-black/35 px-5 py-4 text-left lg:min-w-[18rem]">
+                <p className="text-lg font-semibold text-white">{wholesaleOffer.priceLabel}</p>
+                <p className="mt-2 text-xs uppercase tracking-[0.3em] text-white/45">{wholesaleOffer.units}</p>
+              </div>
+            </div>
+          </section>
         </section>
 
         <AnimatePresence>
