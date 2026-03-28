@@ -34,7 +34,7 @@ describe('ImmersiveStore', () => {
     const checkoutLink = screen.getByRole('link', { name: 'Confirmar reserva por WhatsApp' });
 
     expect(checkoutLink.getAttribute('href')).toContain('https://wa.me/2215047962?text=');
-  expect(decodeURIComponent(checkoutLink.getAttribute('href') ?? '')).toContain('2x Cubanito Clasico');
+    expect(decodeURIComponent(checkoutLink.getAttribute('href') ?? '')).toContain('2x Cubanito Clasico');
     expect(decodeURIComponent(checkoutLink.getAttribute('href') ?? '')).toContain('Nombre:* Braian');
     expect(decodeURIComponent(checkoutLink.getAttribute('href') ?? '')).toContain('Direccion:* La Plata centro');
     expect(decodeURIComponent(checkoutLink.getAttribute('href') ?? '')).toContain('Fecha de retiro:* Sabado 18:00');

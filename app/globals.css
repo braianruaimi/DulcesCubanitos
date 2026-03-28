@@ -127,6 +127,126 @@ body::before {
   display: none;
 }
 
+.hero-reveal {
+  animation: rise-in 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.card-reveal {
+  animation: rise-in 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.float-orbit {
+  animation: orbital-float 2.8s ease-in-out infinite;
+}
+
+.pulse-badge {
+  animation: badge-pulse 1.8s ease-in-out infinite;
+}
+
+.splash-logo {
+  animation: splash-spin 2.4s linear infinite, splash-breathe 1.8s ease-in-out infinite;
+}
+
+.splash-copy {
+  animation: copy-pulse 1.2s ease-in-out infinite;
+}
+
+.splash-fade-out {
+  animation: splash-out 980ms ease forwards;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes orbital-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate3d(0, -4px, 0) scale(1.04);
+  }
+}
+
+@keyframes badge-pulse {
+  0%,
+  100% {
+    opacity: 0.72;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.03);
+  }
+}
+
+@keyframes splash-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes splash-breathe {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+
+  50% {
+    filter: brightness(1.08);
+  }
+}
+
+@keyframes copy-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes splash-out {
+  0%,
+  65% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-reveal,
+  .card-reveal,
+  .float-orbit,
+  .pulse-badge,
+  .splash-logo,
+  .splash-copy,
+  .splash-fade-out {
+    animation: none !important;
+  }
+}
+
 .scrollbar-thin {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 105, 180, 0.45) transparent;
