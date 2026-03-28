@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import type { Product as CartProduct } from '@/types/cart';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 type Product = {
@@ -8,7 +9,8 @@ type Product = {
   category: string;
   title: string;
   subtitle: string;
-  price: string;
+  priceLabel: string;
+  priceValue: number;
   images: string[];
   accent: 'pink' | 'cyan';
 };
@@ -18,7 +20,16 @@ type Faq = {
   answer: string;
 };
 
+type CustomerDetails = {
+  name: string;
+  address: string;
+  pickupDate: string;
+  notes: string;
+};
+
 const basePath = '/DulcesCubanitos';
+const cartStorageKey = 'cubanitos-dulces-cart';
+const customerStorageKey = 'cubanitos-dulces-customer';
 
 const withBasePath = (path: string) => `${basePath}${path}`;
 
@@ -28,7 +39,8 @@ const products: Product[] = [
     category: 'Los Clasicos',
     title: 'Dulce de Leche Rush',
     subtitle: 'Crujiente fino, relleno al instante y golpe final de azucar glass.',
-    price: '$3.200',
+    priceLabel: '$3.200',
+    priceValue: 3200,
     images: [withBasePath('/images/cubanito-neon-1.svg'), withBasePath('/images/cubanito-neon-2.svg'), withBasePath('/images/cubanito-neon-3.svg')],
     accent: 'pink',
   },
@@ -37,7 +49,8 @@ const products: Product[] = [
     category: 'Premium Nocciola',
     title: 'Hazelnut Pulse',
     subtitle: 'Nocciola intensa con textura cremosa y remate de cacao oscuro.',
-    price: '$4.100',
+    priceLabel: '$4.100',
+    priceValue: 4100,
     images: [withBasePath('/images/cubanito-neon-2.svg'), withBasePath('/images/cubanito-neon-3.svg'), withBasePath('/images/cubanito-neon-1.svg')],
     accent: 'cyan',
   },
@@ -46,7 +59,8 @@ const products: Product[] = [
     category: 'Edicion Limitada',
     title: 'Pink Citrus Voltage',
     subtitle: 'Crema citrica brillante con un acabado fresco y electrico.',
-    price: '$4.600',
+    priceLabel: '$4.600',
+    priceValue: 4600,
     images: [withBasePath('/images/cubanito-neon-3.svg'), withBasePath('/images/cubanito-neon-1.svg'), withBasePath('/images/cubanito-neon-2.svg')],
     accent: 'pink',
   },
@@ -55,7 +69,8 @@ const products: Product[] = [
     category: 'Black Label',
     title: 'Cacao Obsidiana',
     subtitle: 'Chocolate amargo sedoso, capas finas y un contraste profundo.',
-    price: '$4.500',
+    priceLabel: '$4.500',
+    priceValue: 4500,
     images: [withBasePath('/images/cubanito-neon-1.svg'), withBasePath('/images/cubanito-neon-3.svg'), withBasePath('/images/cubanito-neon-2.svg')],
     accent: 'cyan',
   },
@@ -64,7 +79,8 @@ const products: Product[] = [
     category: 'Eco-Sweet',
     title: 'Plant Based Glow',
     subtitle: 'Version vegana con crema de coco tostado y vainilla limpia.',
-    price: '$4.000',
+    priceLabel: '$4.000',
+    priceValue: 4000,
     images: [withBasePath('/images/cubanito-neon-2.svg'), withBasePath('/images/cubanito-neon-1.svg'), withBasePath('/images/cubanito-neon-3.svg')],
     accent: 'pink',
   },
@@ -73,7 +89,8 @@ const products: Product[] = [
     category: 'Mini Bites',
     title: 'Pocket Crunch',
     subtitle: 'Pack de mini cubanitos para mesa dulce, eventos y antojos serios.',
-    price: '$2.700',
+    priceLabel: '$2.700',
+    priceValue: 2700,
     images: [withBasePath('/images/cubanito-neon-3.svg'), withBasePath('/images/cubanito-neon-2.svg'), withBasePath('/images/cubanito-neon-1.svg')],
     accent: 'cyan',
   },
@@ -82,7 +99,8 @@ const products: Product[] = [
     category: 'Signature Drops',
     title: 'Neon Signature Box',
     subtitle: 'Seleccion del taller con rellenos premium y acabado de temporada.',
-    price: '$5.200',
+    priceLabel: '$5.200',
+    priceValue: 5200,
     images: [withBasePath('/images/cubanito-neon-1.svg'), withBasePath('/images/cubanito-neon-2.svg'), withBasePath('/images/cubanito-neon-3.svg')],
     accent: 'pink',
   },
@@ -116,15 +134,104 @@ const whatsappMessage =
 
 const whatsappNumber = '2215047962';
 
+const initialCustomerDetails: CustomerDetails = {
+  name: '',
+  address: '',
+  pickupDate: '',
+  notes: '',
+};
+
+const formatPrice = (value: number) =>
+  new Intl.NumberFormat('es-AR', {
+    style: 'currency',
+    currency: 'ARS',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+
+const isCartProduct = (value: unknown): value is CartProduct => {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const candidate = value as Partial<CartProduct>;
+
+  return (
+    typeof candidate.id === 'string' &&
+    typeof candidate.name === 'string' &&
+    typeof candidate.price === 'number' &&
+    typeof candidate.quantity === 'number'
+  );
+};
+
+const isCustomerDetails = (value: unknown): value is CustomerDetails => {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const candidate = value as Partial<CustomerDetails>;
+
+  return (
+    typeof candidate.name === 'string' &&
+    typeof candidate.address === 'string' &&
+    typeof candidate.pickupDate === 'string' &&
+    typeof candidate.notes === 'string'
+  );
+};
+
+const generateWhatsAppMessage = (cart: CartProduct[], total: number, customerDetails: CustomerDetails) => {
+  let message = '*🍦 NUEVO PEDIDO - CUBANITOS DULCES*\n';
+  message += '--------------------------\n';
+
+  cart.forEach((item) => {
+    message += `• ${item.quantity}x ${item.name} (${formatPrice(item.price * item.quantity)})\n`;
+  });
+
+  message += '--------------------------\n';
+  message += `*TOTAL A PAGAR: ${formatPrice(total)}*\n\n`;
+
+  if (customerDetails.name.trim()) {
+    message += `*Nombre:* ${customerDetails.name.trim()}\n`;
+  }
+
+  if (customerDetails.address.trim()) {
+    message += `*Direccion:* ${customerDetails.address.trim()}\n`;
+  }
+
+  if (customerDetails.pickupDate.trim()) {
+    message += `*Fecha de retiro:* ${customerDetails.pickupDate.trim()}\n`;
+  }
+
+  if (customerDetails.notes.trim()) {
+    message += `*Notas extra:* ${customerDetails.notes.trim()}\n`;
+  }
+
+  if (
+    customerDetails.name.trim() ||
+    customerDetails.address.trim() ||
+    customerDetails.pickupDate.trim() ||
+    customerDetails.notes.trim()
+  ) {
+    message += '\n';
+  }
+
+  message += '¿Me confirman la disponibilidad para retirar? 🚀';
+
+  return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+};
+
 const cartIndicatorBase =
   'inline-flex min-w-10 items-center justify-center rounded-full border px-3 py-1 text-sm font-semibold';
 
 export function ImmersiveStore() {
   const [activeIndexes, setActiveIndexes] = useState<number[]>(() => products.map(() => 0));
   const [parallaxOffsets, setParallaxOffsets] = useState<number[]>(() => products.map(() => 0));
-  const [cartCount, setCartCount] = useState(0);
+  const [cart, setCart] = useState<CartProduct[]>([]);
+  const [cartReady, setCartReady] = useState(false);
   const [cartPulse, setCartPulse] = useState(false);
   const [activePulseId, setActivePulseId] = useState<string | null>(null);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [customerDetails, setCustomerDetails] = useState<CustomerDetails>(initialCustomerDetails);
   const [chatOpen, setChatOpen] = useState(false);
   const [activeFaq, setActiveFaq] = useState<Faq>(faqs[0]);
   const cardRefs = useRef<Array<HTMLElement | null>>([]);
@@ -176,37 +283,159 @@ export function ImmersiveStore() {
   }, []);
 
   useEffect(() => {
-    if (!chatOpen) {
+    try {
+      const savedCart = window.localStorage.getItem(cartStorageKey);
+      const savedCustomerDetails = window.localStorage.getItem(customerStorageKey);
+
+      if (savedCart) {
+        const parsedCart = JSON.parse(savedCart) as unknown;
+
+        if (Array.isArray(parsedCart)) {
+          setCart(parsedCart.filter(isCartProduct));
+        }
+      }
+
+      if (savedCustomerDetails) {
+        const parsedCustomerDetails = JSON.parse(savedCustomerDetails) as unknown;
+
+        if (isCustomerDetails(parsedCustomerDetails)) {
+          setCustomerDetails(parsedCustomerDetails);
+        }
+      }
+    } catch {
+      window.localStorage.removeItem(cartStorageKey);
+      window.localStorage.removeItem(customerStorageKey);
+    } finally {
+      setCartReady(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!cartReady) {
+      return;
+    }
+
+    window.localStorage.setItem(cartStorageKey, JSON.stringify(cart));
+  }, [cart, cartReady]);
+
+  useEffect(() => {
+    if (!cartReady) {
+      return;
+    }
+
+    window.localStorage.setItem(customerStorageKey, JSON.stringify(customerDetails));
+  }, [cartReady, customerDetails]);
+
+  useEffect(() => {
+    if (!chatOpen && !cartOpen) {
       return;
     }
 
     const onEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setChatOpen(false);
+        setCartOpen(false);
       }
     };
 
     window.addEventListener('keydown', onEscape);
 
     return () => window.removeEventListener('keydown', onEscape);
-  }, [chatOpen]);
+  }, [chatOpen, cartOpen]);
 
   const cartClassName = useMemo(() => {
     const pulseClass = cartPulse ? 'animate-pulseGlow' : '';
     return `${cartIndicatorBase} border-neonCyan/50 bg-black/80 text-white shadow-neon ${pulseClass}`.trim();
   }, [cartPulse]);
 
-  const addToCart = (productId: string) => {
-    setCartCount((current) => current + 1);
-    setActivePulseId(productId);
+  const cartCount = useMemo(() => cart.reduce((total, item) => total + item.quantity, 0), [cart]);
+  const cartTotal = useMemo(() => cart.reduce((total, item) => total + item.price * item.quantity, 0), [cart]);
+
+  const checkoutUrl = useMemo(() => {
+    if (cart.length === 0) {
+      return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
+    }
+
+    return generateWhatsAppMessage(cart, cartTotal, customerDetails);
+  }, [cart, cartTotal, customerDetails]);
+
+  const updateCustomerDetail = (field: keyof CustomerDetails, value: string) => {
+    setCustomerDetails((current) => ({
+      ...current,
+      [field]: value,
+    }));
+  };
+
+  const addToCart = (product: Product) => {
+    setCart((current) => {
+      const existingProduct = current.find((item) => item.id === product.id);
+
+      if (existingProduct) {
+        return current.map((item) =>
+          item.id === product.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item,
+        );
+      }
+
+      return [
+        ...current,
+        {
+          id: product.id,
+          name: product.title,
+          price: product.priceValue,
+          quantity: 1,
+        },
+      ];
+    });
+
+    setActivePulseId(product.id);
     setCartPulse(true);
 
-    window.setTimeout(() => setActivePulseId((current) => (current === productId ? null : current)), 700);
+    window.setTimeout(() => setActivePulseId((current) => (current === product.id ? null : current)), 700);
     window.setTimeout(() => setCartPulse(false), 900);
   };
 
+  const decreaseQuantity = (productId: string) => {
+    setCart((current) =>
+      current.flatMap((item) => {
+        if (item.id !== productId) {
+          return [item];
+        }
+
+        if (item.quantity <= 1) {
+          return [];
+        }
+
+        return [{ ...item, quantity: item.quantity - 1 }];
+      }),
+    );
+  };
+
+  const increaseQuantity = (productId: string) => {
+    const product = products.find((entry) => entry.id === productId);
+
+    if (!product) {
+      return;
+    }
+
+    addToCart(product);
+  };
+
+  const removeFromCart = (productId: string) => {
+    setCart((current) => current.filter((item) => item.id !== productId));
+  };
+
+  const openCart = () => {
+    if (cartCount === 0) {
+      return;
+    }
+
+    setCartOpen(true);
+  };
+
   return (
-    <main className="relative overflow-x-hidden pb-28 text-white">
+    <main className="relative overflow-x-hidden pb-44 text-white">
       <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 pb-12 pt-4 sm:px-6 lg:px-8">
         <header className="sticky top-4 z-30 mb-8 rounded-[28px] border border-white/10 bg-black/75 px-4 py-4 backdrop-blur-xl sm:px-6 panel-border brutalist-shadow">
           <div className="flex items-center justify-between gap-4">
@@ -216,8 +445,19 @@ export function ImmersiveStore() {
                 Cubanitos Dulces
               </h1>
             </div>
-            <div className={cartClassName}>
-              Carrito {cartCount}
+            <div className="flex flex-col items-end gap-2">
+              <button
+                type="button"
+                onClick={openCart}
+                disabled={cartCount === 0}
+                aria-label="Abrir carrito"
+                className={`${cartClassName} transition hover:-translate-y-0.5 disabled:cursor-default disabled:opacity-80`}
+              >
+                Carrito {cartCount}
+              </button>
+              <p className="text-xs uppercase tracking-[0.32em] text-white/50">
+                Total {formatPrice(cartTotal)}
+              </p>
             </div>
           </div>
           <div className="mt-5 grid gap-3 border-t border-white/10 pt-4 text-sm text-white/70 sm:grid-cols-[1.4fr,1fr,1fr]">
@@ -254,7 +494,8 @@ export function ImmersiveStore() {
           {products.map((product, index) => {
             const isPink = product.accent === 'pink';
             const activeIndex = activeIndexes[index];
-            const pulse = activePulseId === product.id ? 'animate-pulseGlow' : '';
+            const pulse = activePulseId === product.id ? 'animate-pulseGlow scale-105' : '';
+            const quantityInCart = cart.find((item) => item.id === product.id)?.quantity ?? 0;
 
             return (
               <article
@@ -309,17 +550,20 @@ export function ImmersiveStore() {
                     </h3>
                     <p className="mt-2 text-sm text-white/70">{product.subtitle}</p>
                     <div className="mt-4 h-px w-20 bg-gradient-to-r from-neonPink/60 to-neonCyan/60" />
-                    <p className="mt-4 text-xl font-semibold text-white">{product.price}</p>
+                    <p className="mt-4 text-xl font-semibold text-white">{product.priceLabel}</p>
+                    <p className="mt-2 text-xs uppercase tracking-[0.34em] text-white/45">
+                      {quantityInCart > 0 ? `En carrito x${quantityInCart}` : 'Listo para sumar'}
+                    </p>
                   </div>
 
                   <button
                     type="button"
                     aria-label={`Agregar ${product.title} al carrito`}
-                    onClick={() => addToCart(product.id)}
+                    onClick={() => addToCart(product)}
                     className={`mt-1 inline-flex h-14 w-14 flex-none items-center justify-center rounded-full border text-3xl font-light leading-none transition duration-300 hover:-translate-y-1 hover:scale-105 ${pulse} ${
                       isPink
-                        ? 'border-neonPink/80 text-neonPink shadow-button hover:bg-neonPink/10'
-                        : 'border-neonCyan/80 text-neonCyan shadow-button hover:bg-neonCyan/10'
+                        ? 'border-neonPink/80 text-neonPink shadow-button hover:bg-neonPink/10 active:shadow-[0_0_0_1px_rgba(255,105,180,0.85),0_0_26px_rgba(255,105,180,0.75),0_0_42px_rgba(0,255,255,0.22)]'
+                        : 'border-neonCyan/80 text-neonCyan shadow-button hover:bg-neonCyan/10 active:shadow-[0_0_0_1px_rgba(0,255,255,0.85),0_0_26px_rgba(0,255,255,0.65),0_0_36px_rgba(255,105,180,0.2)]'
                     }`}
                   >
                     +
@@ -331,11 +575,37 @@ export function ImmersiveStore() {
         </section>
       </div>
 
+      {cartCount > 0 ? (
+        <button
+          type="button"
+          onClick={() => setCartOpen(true)}
+          aria-label="Abrir modal de reserva"
+          className="fixed bottom-24 left-1/2 z-40 flex w-[min(calc(100%-1.5rem),32rem)] -translate-x-1/2 items-center gap-3 rounded-full border border-neonPink/80 bg-black/90 px-4 py-3 text-neonPink shadow-[0_0_0_1px_rgba(255,105,180,0.8),0_0_22px_rgba(255,105,180,0.38)] backdrop-blur-xl transition duration-300 hover:scale-[1.02] hover:shadow-[0_0_0_1px_rgba(255,105,180,0.9),0_0_30px_rgba(255,105,180,0.48)] sm:bottom-6"
+        >
+          <span className="inline-flex min-w-10 items-center justify-center rounded-full bg-neonPink px-3 py-1 text-sm font-black text-black">
+            {cartCount}
+          </span>
+          <span className="flex min-w-0 flex-1 flex-col">
+            <span className="truncate text-xs uppercase tracking-[0.32em] text-white/60">Brutalismo Neon</span>
+            <span className="truncate text-sm font-black uppercase tracking-[0.12em] text-white">Revisar carrito y confirmar reserva</span>
+          </span>
+          <span className="text-right text-sm font-semibold text-white">
+            {formatPrice(cartTotal)}
+          </span>
+        </button>
+      ) : null}
+
       <a
-        href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`}
+        href={cartCount > 0 ? undefined : checkoutUrl}
         target="_blank"
         rel="noreferrer"
         aria-label="Reservar por WhatsApp"
+        onClick={(event) => {
+          if (cartCount > 0) {
+            event.preventDefault();
+            setCartOpen(true);
+          }
+        }}
         className="fixed bottom-5 right-4 z-40 flex h-16 w-16 items-center justify-center rounded-full border border-[#25D366]/70 bg-black/90 shadow-[0_0_0_1px_rgba(37,211,102,0.7),0_0_18px_rgba(37,211,102,0.25)] transition duration-300 hover:-translate-y-1 hover:scale-105 sm:right-6"
       >
         <svg viewBox="0 0 24 24" className="h-7 w-7 fill-[#25D366]" aria-hidden="true">
@@ -403,6 +673,149 @@ export function ImmersiveStore() {
             <div className="mt-5 rounded-[24px] border border-neonCyan/25 bg-white/[0.03] p-4">
               <p className="text-xs uppercase tracking-[0.45em] text-neonPink/70">Respuesta inmediata</p>
               <p className="mt-3 text-balance text-base leading-7 text-white/88">{activeFaq.answer}</p>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {cartOpen ? (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 p-4 backdrop-blur-md sm:items-center">
+          <div className="relative w-full max-w-2xl overflow-hidden rounded-[30px] border border-white/10 bg-[rgba(7,7,7,0.98)] p-5 panel-border brutalist-shadow">
+            <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.45em] text-neonPink/70">Checkout Neon</p>
+                <h2 className="mt-2 text-2xl font-black uppercase tracking-[0.16em] text-white">
+                  Revisa tu reserva
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCartOpen(false)}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 text-xl text-white/70 transition hover:border-neonPink/70 hover:text-white"
+                aria-label="Cerrar carrito"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="mt-5 grid gap-5 lg:grid-cols-[1.2fr,0.9fr]">
+              <div className="space-y-3">
+                {cart.map((item) => (
+                  <div
+                    key={item.id}
+                    className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="text-sm font-black uppercase tracking-[0.14em] text-white">{item.name}</p>
+                        <p className="mt-2 text-xs uppercase tracking-[0.3em] text-white/45">
+                          Subtotal {formatPrice(item.price * item.quantity)}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeFromCart(item.id)}
+                        aria-label={`Eliminar ${item.name} del carrito`}
+                        className="inline-flex rounded-full border border-white/10 px-3 py-1 text-[0.65rem] uppercase tracking-[0.28em] text-white/55 transition hover:border-neonPink/60 hover:text-white"
+                      >
+                        Quitar
+                      </button>
+                    </div>
+
+                    <div className="mt-4 flex items-center justify-between gap-3">
+                      <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/40 px-2 py-2">
+                        <button
+                          type="button"
+                          onClick={() => decreaseQuantity(item.id)}
+                          aria-label={`Restar cantidad de ${item.name}`}
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-xl text-white/80 transition hover:border-neonPink/60 hover:text-white"
+                        >
+                          −
+                        </button>
+                        <span className="min-w-8 text-center text-sm font-black text-white">{item.quantity}</span>
+                        <button
+                          type="button"
+                          onClick={() => increaseQuantity(item.id)}
+                          aria-label={`Sumar cantidad de ${item.name}`}
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-xl text-white/80 transition hover:border-neonCyan/60 hover:text-white"
+                        >
+                          +
+                        </button>
+                      </div>
+
+                      <p className="text-sm font-semibold text-white/80">Unitario {formatPrice(item.price)}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="rounded-[26px] border border-neonCyan/20 bg-white/[0.03] p-4">
+                <p className="text-xs uppercase tracking-[0.4em] text-neonCyan/70">Datos de retiro</p>
+
+                <div className="mt-4 grid gap-3">
+                  <label className="grid gap-2 text-xs uppercase tracking-[0.24em] text-white/55">
+                    Nombre
+                    <input
+                      value={customerDetails.name}
+                      onChange={(event) => updateCustomerDetail('name', event.target.value)}
+                      placeholder="Tu nombre"
+                      className="rounded-[18px] border border-white/10 bg-black/40 px-4 py-3 text-sm normal-case tracking-normal text-white outline-none transition placeholder:text-white/25 focus:border-neonPink/60"
+                    />
+                  </label>
+
+                  <label className="grid gap-2 text-xs uppercase tracking-[0.24em] text-white/55">
+                    Direccion o punto de retiro
+                    <input
+                      value={customerDetails.address}
+                      onChange={(event) => updateCustomerDetail('address', event.target.value)}
+                      placeholder="Barrio, punto de entrega o retiro"
+                      className="rounded-[18px] border border-white/10 bg-black/40 px-4 py-3 text-sm normal-case tracking-normal text-white outline-none transition placeholder:text-white/25 focus:border-neonPink/60"
+                    />
+                  </label>
+
+                  <label className="grid gap-2 text-xs uppercase tracking-[0.24em] text-white/55">
+                    Fecha de retiro
+                    <input
+                      value={customerDetails.pickupDate}
+                      onChange={(event) => updateCustomerDetail('pickupDate', event.target.value)}
+                      placeholder="Ej: Sabado 18:00"
+                      className="rounded-[18px] border border-white/10 bg-black/40 px-4 py-3 text-sm normal-case tracking-normal text-white outline-none transition placeholder:text-white/25 focus:border-neonPink/60"
+                    />
+                  </label>
+
+                  <label className="grid gap-2 text-xs uppercase tracking-[0.24em] text-white/55">
+                    Notas extra
+                    <textarea
+                      value={customerDetails.notes}
+                      onChange={(event) => updateCustomerDetail('notes', event.target.value)}
+                      placeholder="Ej: sin azucar glass, para cumple, entrega urgente"
+                      rows={4}
+                      className="resize-none rounded-[18px] border border-white/10 bg-black/40 px-4 py-3 text-sm normal-case tracking-normal text-white outline-none transition placeholder:text-white/25 focus:border-neonPink/60"
+                    />
+                  </label>
+                </div>
+
+                <div className="mt-5 rounded-[20px] border border-white/10 bg-black/30 p-4">
+                  <div className="flex items-center justify-between gap-3 text-xs uppercase tracking-[0.3em] text-white/45">
+                    <span>Productos</span>
+                    <span>{cartCount}</span>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between gap-3 text-sm font-semibold text-white">
+                    <span>Total</span>
+                    <span>{formatPrice(cartTotal)}</span>
+                  </div>
+                </div>
+
+                <a
+                  href={checkoutUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="Confirmar reserva por WhatsApp"
+                  className="mt-5 inline-flex w-full items-center justify-center rounded-full border border-neonPink/80 bg-black px-5 py-4 text-sm font-black uppercase tracking-[0.14em] text-neonPink shadow-[0_0_0_1px_rgba(255,105,180,0.82),0_0_18px_rgba(255,105,180,0.34)] transition hover:scale-[1.01] hover:text-white"
+                >
+                  Confirmar reserva por WhatsApp
+                </a>
+              </div>
             </div>
           </div>
         </div>
