@@ -4,7 +4,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { ServiceWorkerRegister } from '@/components/service-worker-register';
 
-const basePath = '/CubanitosDulces';
+const basePath = '/DulcesCubanitos';
 
 const inter = Inter({
   subsets: ['latin'],

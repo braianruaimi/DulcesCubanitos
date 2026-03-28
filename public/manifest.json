@@ -2,20 +2,20 @@
   "name": "Cubanitos Dulces",
   "short_name": "Cubanitos",
   "description": "Venta inmersiva de cubanitos artesanales con reservas rapidas y experiencia neon.",
-  "start_url": "/CubanitosDulces/",
+  "start_url": "/DulcesCubanitos/",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",
   "lang": "es",
   "icons": [
     {
-      "src": "/CubanitosDulces/icons/icon-192.svg",
+      "src": "/DulcesCubanitos/icons/icon-192.svg",
       "sizes": "192x192",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "/CubanitosDulces/icons/icon-512.svg",
+      "src": "/DulcesCubanitos/icons/icon-512.svg",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"

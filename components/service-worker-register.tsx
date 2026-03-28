@@ -8,7 +8,7 @@ export function ServiceWorkerRegister() {
       return;
     }
 
-    navigator.serviceWorker.register('/CubanitosDulces/sw.js').catch(() => undefined);
+    navigator.serviceWorker.register('/DulcesCubanitos/sw.js').catch(() => undefined);
   }, []);
 
   return null;

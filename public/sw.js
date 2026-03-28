@@ -1,12 +1,12 @@
 const CACHE_NAME = 'cubanitos-dulces-v2';
 const OFFLINE_ASSETS = [
-  '/CubanitosDulces/',
-  '/CubanitosDulces/manifest.json',
-  '/CubanitosDulces/icons/icon-192.svg',
-  '/CubanitosDulces/icons/icon-512.svg',
-  '/CubanitosDulces/images/cubanito-neon-1.svg',
-  '/CubanitosDulces/images/cubanito-neon-2.svg',
-  '/CubanitosDulces/images/cubanito-neon-3.svg',
+  '/DulcesCubanitos/',
+  '/DulcesCubanitos/manifest.json',
+  '/DulcesCubanitos/icons/icon-192.svg',
+  '/DulcesCubanitos/icons/icon-512.svg',
+  '/DulcesCubanitos/images/cubanito-neon-1.svg',
+  '/DulcesCubanitos/images/cubanito-neon-2.svg',
+  '/DulcesCubanitos/images/cubanito-neon-3.svg',
 ];
 
 self.addEventListener('install', (event) => {
@@ -28,10 +28,10 @@ const isHtmlRequest = (request) =>
   (request.headers.get('accept') || '').includes('text/html');
 
 const isStaticAsset = (url) =>
-  url.pathname.startsWith('/CubanitosDulces/_next/') ||
-  url.pathname.startsWith('/CubanitosDulces/images/') ||
-  url.pathname.startsWith('/CubanitosDulces/icons/') ||
-  url.pathname === '/CubanitosDulces/manifest.json';
+  url.pathname.startsWith('/DulcesCubanitos/_next/') ||
+  url.pathname.startsWith('/DulcesCubanitos/images/') ||
+  url.pathname.startsWith('/DulcesCubanitos/icons/') ||
+  url.pathname === '/DulcesCubanitos/manifest.json';
 
 const cacheFirst = async (request) => {
   const cachedResponse = await caches.match(request);
@@ -67,7 +67,7 @@ const networkFirst = async (request) => {
       return cachedResponse;
     }
 
-    return caches.match('/CubanitosDulces/');
+    return caches.match('/DulcesCubanitos/');
   }
 };
 

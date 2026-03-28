@@ -18,7 +18,7 @@ type Faq = {
   answer: string;
 };
 
-const basePath = '/CubanitosDulces';
+const basePath = '/DulcesCubanitos';
 
 const withBasePath = (path: string) => `${basePath}${path}`;
 

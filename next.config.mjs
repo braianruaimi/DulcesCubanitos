@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'export',
-  basePath: '/CubanitosDulces',
-  assetPrefix: '/CubanitosDulces/',
+  basePath: '/DulcesCubanitos',
+  assetPrefix: '/DulcesCubanitos/',
   trailingSlash: true,
   images: {
     unoptimized: true,

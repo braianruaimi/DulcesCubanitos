@@ -91,13 +91,13 @@ El export queda generado en la carpeta out.
 
 Este proyecto está configurado para publicarse bajo el repositorio:
 
-- /CubanitosDulces
+- /DulcesCubanitos
 
 Por eso, en [next.config.mjs](next.config.mjs) se definieron:
 
 - output: export
-- basePath: /CubanitosDulces
-- assetPrefix: /CubanitosDulces/
+- basePath: /DulcesCubanitos
+- assetPrefix: /DulcesCubanitos/
 - trailingSlash: true
 
 La URL pública esperada es:
