@@ -19,6 +19,7 @@ describe('ImmersiveStore', () => {
 
     expect(cartButton.textContent).toContain('0');
 
+    await user.click(screen.getByRole('button', { name: 'Seleccionar pack de 6 unidades para Cubanito Clasico' }));
     await user.click(screen.getByRole('button', { name: 'Agregar Cubanito Clasico al carrito' }));
     await user.click(screen.getByRole('button', { name: 'Agregar Cubanito Clasico al carrito' }));
 
@@ -34,7 +35,7 @@ describe('ImmersiveStore', () => {
     const checkoutLink = screen.getByRole('link', { name: 'Confirmar reserva por WhatsApp' });
 
     expect(checkoutLink.getAttribute('href')).toContain('https://wa.me/2215047962?text=');
-    expect(decodeURIComponent(checkoutLink.getAttribute('href') ?? '')).toContain('2x Cubanito Clasico');
+    expect(decodeURIComponent(checkoutLink.getAttribute('href') ?? '')).toContain('2x Cubanito Clasico x6');
     expect(decodeURIComponent(checkoutLink.getAttribute('href') ?? '')).toContain('Nombre:* Braian');
     expect(decodeURIComponent(checkoutLink.getAttribute('href') ?? '')).toContain('Direccion:* La Plata centro');
     expect(decodeURIComponent(checkoutLink.getAttribute('href') ?? '')).toContain('Fecha de retiro:* Sabado 18:00');
@@ -51,7 +52,17 @@ describe('ImmersiveStore', () => {
   it('restores the cart from localStorage on reload', async () => {
     window.localStorage.setItem(
       'cubanitos-dulces-cart',
-      JSON.stringify([{ id: 'signature', name: 'Neon Signature Box', price: 5200, quantity: 3 }]),
+      JSON.stringify([
+        {
+          id: 'signature-12',
+          productId: 'signature',
+          name: 'Neon Signature Box x12',
+          price: 5200,
+          quantity: 3,
+          packSize: 12,
+          packLabel: 'x12 u $5.200',
+        },
+      ]),
     );
 
     render(<ImmersiveStore />);
@@ -70,12 +81,12 @@ describe('ImmersiveStore', () => {
 
     await user.click(screen.getByRole('button', { name: 'Agregar Neon Signature Box al carrito' }));
     await user.click(screen.getByRole('button', { name: 'Abrir modal de reserva' }));
-    await user.click(screen.getByRole('button', { name: 'Sumar cantidad de Neon Signature Box' }));
-    await user.click(screen.getByRole('button', { name: 'Restar cantidad de Neon Signature Box' }));
+    await user.click(screen.getByRole('button', { name: 'Sumar cantidad de Neon Signature Box x12' }));
+    await user.click(screen.getByRole('button', { name: 'Restar cantidad de Neon Signature Box x12' }));
 
     expect(screen.getByRole('button', { name: 'Abrir carrito' }).textContent).toContain('1');
 
-    await user.click(screen.getByRole('button', { name: 'Eliminar Neon Signature Box del carrito' }));
+    await user.click(screen.getByRole('button', { name: 'Eliminar Neon Signature Box x12 del carrito' }));
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'Abrir carrito' }).textContent).toContain('0');

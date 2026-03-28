@@ -3,4 +3,7 @@ export interface Product {
   name: string;
   price: number;
   quantity: number;
+  productId?: string;
+  packSize?: number;
+  packLabel?: string;
 }

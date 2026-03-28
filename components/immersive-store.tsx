@@ -6,6 +6,12 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import type { Product as CartProduct } from '@/types/cart';
 
+type PackOption = {
+  units: number;
+  label: string;
+  price: number;
+};
+
 type Product = {
   id: string;
   category: string;
@@ -17,6 +23,7 @@ type Product = {
   images: string[];
   stockBadge: string;
   accent: 'pink' | 'cyan';
+  unitOptions?: PackOption[];
 };
 
 type Faq = {
@@ -49,6 +56,23 @@ const rotatedCarouselImages = [
   [realCarouselImages[2], realCarouselImages[0], realCarouselImages[1]],
 ];
 
+const formatCurrencyLabel = (value: number) =>
+  new Intl.NumberFormat('es-AR', {
+    style: 'currency',
+    currency: 'ARS',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+
+const createPackOptions = (packOfTwelvePrice: number): PackOption[] => {
+  const packOfSixPrice = packOfTwelvePrice / 2;
+
+  return [
+    { units: 12, label: `x12 u ${formatCurrencyLabel(packOfTwelvePrice)}`, price: packOfTwelvePrice },
+    { units: 6, label: `x6 u ${formatCurrencyLabel(packOfSixPrice)}`, price: packOfSixPrice },
+  ];
+};
+
 const wholesaleOffer = {
   title: 'Venta Mayorista',
   subtitle: 'Obleas de 18 cm por kilo para produccion, mesas dulces y reventa.',
@@ -69,6 +93,10 @@ const products: Product[] = [
     images: rotatedCarouselImages[0],
     stockBadge: '🔥 Sale en 1h',
     accent: 'pink',
+    unitOptions: [
+      { units: 12, label: 'x12 u $10.000', price: 10000 },
+      { units: 6, label: 'x6 u $5.000', price: 5000 },
+    ],
   },
   {
     id: 'premium-nocciola',
@@ -81,6 +109,10 @@ const products: Product[] = [
     images: rotatedCarouselImages[1],
     stockBadge: 'Solo 10 unidades',
     accent: 'cyan',
+    unitOptions: [
+      { units: 12, label: 'x12 u $15.000', price: 15000 },
+      { units: 6, label: 'x6 u $7.500', price: 7500 },
+    ],
   },
   {
     id: 'edicion-limitada',
@@ -93,54 +125,62 @@ const products: Product[] = [
     images: rotatedCarouselImages[2],
     stockBadge: '🔥 Batch del dia',
     accent: 'pink',
+    unitOptions: [
+      { units: 12, label: 'x12 u $20.000', price: 20000 },
+      { units: 6, label: 'x6 u $10.000', price: 10000 },
+    ],
   },
   {
     id: 'black-label',
     category: 'Black Label',
     title: 'Cacao Obsidiana',
     subtitle: 'Chocolate amargo sedoso, capas finas y contraste profundo.',
-    primaryPriceLabel: '$4.500',
-    secondaryPriceLabel: 'Pack especial',
+    primaryPriceLabel: 'x12 u $4.500',
+    secondaryPriceLabel: 'x6 u $2.250',
     priceValue: 4500,
     images: rotatedCarouselImages[0],
     stockBadge: 'Solo hoy',
     accent: 'cyan',
+    unitOptions: createPackOptions(4500),
   },
   {
     id: 'vegano',
     category: 'Veganos',
     title: 'Plant Based Glow',
     subtitle: 'Version vegetal con coco tostado y vainilla limpia, lista para envio rapido.',
-    primaryPriceLabel: '$4.000',
-    secondaryPriceLabel: 'Pack especial',
+    primaryPriceLabel: 'x12 u $4.000',
+    secondaryPriceLabel: 'x6 u $2.000',
     priceValue: 4000,
     images: rotatedCarouselImages[1],
     stockBadge: '🌿 Sale en 2h',
     accent: 'pink',
+    unitOptions: createPackOptions(4000),
   },
   {
     id: 'mini-bites',
     category: 'Mini Bites',
     title: 'Pocket Crunch',
     subtitle: 'Mini cubanitos para mesas dulces, eventos y antojos urgentes.',
-    primaryPriceLabel: '$2.700',
-    secondaryPriceLabel: 'Pack especial',
+    primaryPriceLabel: 'x12 u $2.700',
+    secondaryPriceLabel: 'x6 u $1.350',
     priceValue: 2700,
     images: rotatedCarouselImages[2],
     stockBadge: 'Ultimos packs',
     accent: 'cyan',
+    unitOptions: createPackOptions(2700),
   },
   {
     id: 'signature',
     category: 'Signature Drops',
     title: 'Neon Signature Box',
     subtitle: 'Curaduria premium del taller con acabados de temporada y textura glaseada.',
-    primaryPriceLabel: '$5.200',
-    secondaryPriceLabel: 'Pack premium',
+    primaryPriceLabel: 'x12 u $5.200',
+    secondaryPriceLabel: 'x6 u $2.600',
     priceValue: 5200,
     images: rotatedCarouselImages[0],
     stockBadge: 'Reserva express',
     accent: 'pink',
+    unitOptions: createPackOptions(5200),
   },
 ];
 
@@ -177,13 +217,15 @@ const initialCustomerDetails: CustomerDetails = {
   notes: '',
 };
 
-const formatPrice = (value: number) =>
-  new Intl.NumberFormat('es-AR', {
-    style: 'currency',
-    currency: 'ARS',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value);
+const initialPackSelections = products.reduce<Record<string, number>>((accumulator, product) => {
+  if (product.unitOptions?.length) {
+    accumulator[product.id] = product.unitOptions[0].units;
+  }
+
+  return accumulator;
+}, {});
+
+const formatPrice = (value: number) => formatCurrencyLabel(value);
 
 const isCartProduct = (value: unknown): value is CartProduct => {
   if (!value || typeof value !== 'object') {
@@ -213,6 +255,14 @@ const isCustomerDetails = (value: unknown): value is CustomerDetails => {
     typeof candidate.pickupDate === 'string' &&
     typeof candidate.notes === 'string'
   );
+};
+
+const getSelectedPackOption = (product: Product, selectedPackSize?: number) => {
+  if (!product.unitOptions?.length) {
+    return null;
+  }
+
+  return product.unitOptions.find((option) => option.units === selectedPackSize) ?? product.unitOptions[0];
 };
 
 const generateWhatsAppMessage = (cart: CartProduct[], total: number, customerDetails: CustomerDetails) => {
@@ -325,6 +375,7 @@ export function ImmersiveStore() {
   const [chatOpen, setChatOpen] = useState(false);
   const [activeFaq, setActiveFaq] = useState<Faq>(faqs[0]);
   const [heroLoaded, setHeroLoaded] = useState(false);
+  const [selectedPackSizes, setSelectedPackSizes] = useState<Record<string, number>>(initialPackSelections);
   const trackRefs = useRef<Array<HTMLDivElement | null>>([]);
 
   useEffect(() => {
@@ -453,16 +504,32 @@ export function ImmersiveStore() {
   };
 
   const addToCart = (product: Product) => {
+    const selectedPackOption = getSelectedPackOption(product, selectedPackSizes[product.id]);
+    const cartId = selectedPackOption ? `${product.id}-${selectedPackOption.units}` : product.id;
+    const cartName = selectedPackOption ? `${product.title} x${selectedPackOption.units}` : product.title;
+    const cartPrice = selectedPackOption?.price ?? product.priceValue;
+
     setCart((current) => {
-      const existingProduct = current.find((item) => item.id === product.id);
+      const existingProduct = current.find((item) => item.id === cartId);
 
       if (existingProduct) {
         return current.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item,
+          item.id === cartId ? { ...item, quantity: item.quantity + 1 } : item,
         );
       }
 
-      return [...current, { id: product.id, name: product.title, price: product.priceValue, quantity: 1 }];
+      return [
+        ...current,
+        {
+          id: cartId,
+          productId: product.id,
+          name: cartName,
+          price: cartPrice,
+          quantity: 1,
+          packSize: selectedPackOption?.units,
+          packLabel: selectedPackOption?.label,
+        },
+      ];
     });
 
     setActivePulseId(product.id);
@@ -488,11 +555,9 @@ export function ImmersiveStore() {
   };
 
   const increaseQuantity = (productId: string) => {
-    const product = products.find((entry) => entry.id === productId);
-
-    if (product) {
-      addToCart(product);
-    }
+    setCart((current) =>
+      current.map((item) => (item.id === productId ? { ...item, quantity: item.quantity + 1 } : item)),
+    );
   };
 
   const removeFromCart = (productId: string) => {
@@ -579,9 +644,15 @@ export function ImmersiveStore() {
 
           <div className="grid gap-6">
             {products.map((product, productIndex) => {
-              const quantityInCart = cart.find((item) => item.id === product.id)?.quantity ?? 0;
+              const quantityInCart = cart
+                .filter((item) => item.productId === product.id || item.id === product.id)
+                .reduce((total, item) => total + item.quantity, 0);
               const activeIndex = activeIndexes[productIndex] ?? 0;
               const pulse = activePulseId === product.id;
+              const selectedPackOption = getSelectedPackOption(product, selectedPackSizes[product.id]);
+              const secondaryPackLabel = product.unitOptions?.find((option) => option.units !== selectedPackOption?.units)?.label;
+              const selectedPriceLabel = selectedPackOption?.label ?? product.primaryPriceLabel;
+              const supportPriceLabel = secondaryPackLabel ?? product.secondaryPriceLabel;
 
               return (
                 <article
@@ -595,8 +666,8 @@ export function ImmersiveStore() {
                       <h2 className="mt-2 text-2xl font-black uppercase tracking-[0.16em] text-white sm:text-3xl">{product.title}</h2>
                     </div>
                     <div className="hidden text-right sm:block">
-                      <p className="text-xs uppercase tracking-[0.36em] text-white/35">{product.primaryPriceLabel}</p>
-                      <p className="mt-1 text-[0.62rem] uppercase tracking-[0.28em] text-white/45">{product.secondaryPriceLabel}</p>
+                      <p className="text-xs uppercase tracking-[0.36em] text-white/35">{selectedPriceLabel}</p>
+                      <p className="mt-1 text-[0.62rem] uppercase tracking-[0.28em] text-white/45">{supportPriceLabel}</p>
                     </div>
                   </div>
 
@@ -643,13 +714,45 @@ export function ImmersiveStore() {
                     <div className="max-w-2xl">
                       <p className="text-balance text-sm leading-7 text-white/72 sm:text-base">{product.subtitle}</p>
                       <div className="neon-divider mt-4 max-w-[7rem]" />
+                      {product.unitOptions?.length ? (
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          {product.unitOptions.map((option) => {
+                            const active = option.units === selectedPackOption?.units;
+
+                            return (
+                              <button
+                                key={`${product.id}-${option.units}`}
+                                type="button"
+                                onClick={() =>
+                                  setSelectedPackSizes((current) => ({
+                                    ...current,
+                                    [product.id]: option.units,
+                                  }))
+                                }
+                                aria-label={`Seleccionar pack de ${option.units} unidades para ${product.title}`}
+                                className={`rounded-full border px-4 py-2 text-xs font-black uppercase tracking-[0.22em] transition ${
+                                  active
+                                    ? 'border-neonPink/75 bg-neonPink/12 text-white shadow-button'
+                                    : 'border-white/10 bg-black/30 text-white/68 hover:border-neonCyan/55 hover:text-white'
+                                }`}
+                              >
+                                {option.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ) : null}
                       <div className="mt-4 flex flex-wrap items-center gap-3">
                         <div>
-                          <p className="text-xl font-semibold text-white">{product.primaryPriceLabel}</p>
-                          <p className="mt-1 text-xs uppercase tracking-[0.28em] text-white/45">{product.secondaryPriceLabel}</p>
+                          <p className="text-xl font-semibold text-white">{selectedPriceLabel}</p>
+                          <p className="mt-1 text-xs uppercase tracking-[0.28em] text-white/45">{supportPriceLabel}</p>
                         </div>
                         <span className="rounded-full border border-white/10 px-3 py-1 text-[0.65rem] uppercase tracking-[0.32em] text-white/45">
-                          {quantityInCart > 0 ? `En carrito x${quantityInCart}` : 'Listo para sumar'}
+                          {quantityInCart > 0
+                            ? `En carrito x${quantityInCart}`
+                            : selectedPackOption
+                              ? `Pack x${selectedPackOption.units} listo`
+                              : 'Listo para sumar'}
                         </span>
                       </div>
                     </div>
@@ -833,6 +936,7 @@ export function ImmersiveStore() {
                         <div className="flex items-start justify-between gap-4">
                           <div>
                             <p className="text-sm font-black uppercase tracking-[0.14em] text-white">{item.name}</p>
+                            {item.packLabel ? <p className="mt-1 text-[0.68rem] uppercase tracking-[0.26em] text-white/45">{item.packLabel}</p> : null}
                             <p className="mt-2 text-xs uppercase tracking-[0.3em] text-white/45">Subtotal {formatPrice(item.price * item.quantity)}</p>
                           </div>
                           <button
