@@ -903,7 +903,7 @@ export function ImmersiveStore() {
         <AnimatePresence>
           {cartOpen ? (
             <m.div
-              className="fixed inset-0 z-50 flex items-end justify-center bg-black/82 p-4 backdrop-blur-md sm:items-center"
+              className="fixed inset-0 z-50 flex items-end justify-center bg-black/82 px-3 pb-3 pt-6 backdrop-blur-md sm:p-4 sm:items-center"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -912,17 +912,17 @@ export function ImmersiveStore() {
                 initial={{ opacity: 0, y: 18, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 18, scale: 0.98 }}
-                className="w-full max-w-3xl rounded-[2rem] border border-white/10 bg-[rgba(7,7,7,0.98)] p-5 glazed-panel"
+                className="max-h-[86vh] w-full max-w-2xl overflow-y-auto rounded-[1.7rem] border border-white/10 bg-[rgba(7,7,7,0.98)] p-4 glazed-panel sm:max-h-[90vh] sm:rounded-[2rem] sm:p-5"
               >
-                <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-4">
+                <div className="sticky top-0 z-10 -mx-4 flex items-start justify-between gap-4 border-b border-white/10 bg-[rgba(7,7,7,0.98)] px-4 pb-4 pt-1 sm:-mx-5 sm:px-5">
                   <div>
                     <p className="text-xs uppercase tracking-[0.45em] text-neonPink/70">Checkout neon</p>
-                    <h2 className="mt-2 text-2xl font-black uppercase tracking-[0.16em] text-white">Revisa tu reserva</h2>
+                    <h2 className="mt-2 text-xl font-black uppercase tracking-[0.16em] text-white sm:text-2xl">Revisa tu reserva</h2>
                   </div>
                   <button
                     type="button"
                     onClick={() => setCartOpen(false)}
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 text-xl text-white/70 transition hover:border-neonPink/70 hover:text-white"
+                    className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/15 bg-black/55 text-xl text-white/80 transition hover:border-neonPink/70 hover:text-white sm:h-11 sm:w-11"
                     aria-label="Cerrar carrito"
                   >
                     ×
