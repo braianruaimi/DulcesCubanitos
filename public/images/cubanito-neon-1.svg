@@ -1,0 +1,35 @@
+<svg width="1200" height="1500" viewBox="0 0 1200 1500" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="1500" fill="#020202"/>
+  <circle cx="944" cy="190" r="210" fill="#00FFFF" fill-opacity="0.18"/>
+  <circle cx="260" cy="280" r="220" fill="#FF69B4" fill-opacity="0.16"/>
+  <rect x="94" y="84" width="1012" height="1332" rx="52" stroke="#1B1B1B" stroke-width="4"/>
+  <g filter="url(#filter0_f_1_31)">
+    <ellipse cx="600" cy="846" rx="360" ry="114" fill="#000000" fill-opacity="0.72"/>
+  </g>
+  <rect x="220" y="654" width="760" height="198" rx="98" transform="rotate(-8 220 654)" fill="url(#paint0_linear_1_31)"/>
+  <rect x="272" y="621" width="656" height="118" rx="59" transform="rotate(-8 272 621)" fill="url(#paint1_linear_1_31)"/>
+  <path d="M342 562L448 406H804L914 571" stroke="#FFF7FA" stroke-opacity="0.66" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M356 696L880 622" stroke="#FFF7FA" stroke-opacity="0.24" stroke-width="16" stroke-linecap="round"/>
+  <path d="M330 748L854 674" stroke="#FFF7FA" stroke-opacity="0.18" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="290" cy="1138" r="82" fill="#FF69B4" fill-opacity="0.1"/>
+  <circle cx="930" cy="1098" r="110" fill="#00FFFF" fill-opacity="0.1"/>
+  <text x="106" y="1260" fill="#FFFFFF" fill-opacity="0.84" font-family="Arial, sans-serif" font-size="64" font-weight="700" letter-spacing="18">CUBANITO</text>
+  <text x="106" y="1338" fill="#FFFFFF" fill-opacity="0.55" font-family="Arial, sans-serif" font-size="30" letter-spacing="10">DARK SUGAR NEON SERIES 01</text>
+  <defs>
+    <filter id="filter0_f_1_31" x="132" y="624" width="936" height="444" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+      <feGaussianBlur stdDeviation="54" result="effect1_foregroundBlur_1_31"/>
+    </filter>
+    <linearGradient id="paint0_linear_1_31" x1="220" y1="753" x2="980" y2="753" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5F3816"/>
+      <stop offset="0.45" stop-color="#C58A47"/>
+      <stop offset="1" stop-color="#603517"/>
+    </linearGradient>
+    <linearGradient id="paint1_linear_1_31" x1="272" y1="680" x2="928" y2="680" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF0D4" stop-opacity="0.52"/>
+      <stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0.72"/>
+      <stop offset="1" stop-color="#FFE1C3" stop-opacity="0.42"/>
+    </linearGradient>
+  </defs>
+</svg>
