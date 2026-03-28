@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cubanitos-dulces-v1';
+const CACHE_NAME = 'cubanitos-dulces-v2';
 const OFFLINE_ASSETS = [
   '/CubanitosDulces/',
   '/CubanitosDulces/manifest.json',
@@ -23,30 +23,71 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+const isHtmlRequest = (request) =>
+  request.mode === 'navigate' ||
+  (request.headers.get('accept') || '').includes('text/html');
+
+const isStaticAsset = (url) =>
+  url.pathname.startsWith('/CubanitosDulces/_next/') ||
+  url.pathname.startsWith('/CubanitosDulces/images/') ||
+  url.pathname.startsWith('/CubanitosDulces/icons/') ||
+  url.pathname === '/CubanitosDulces/manifest.json';
+
+const cacheFirst = async (request) => {
+  const cachedResponse = await caches.match(request);
+
+  if (cachedResponse) {
+    return cachedResponse;
+  }
+
+  const response = await fetch(request);
+
+  if (response && response.status === 200) {
+    const cache = await caches.open(CACHE_NAME);
+    cache.put(request, response.clone());
+  }
+
+  return response;
+};
+
+const networkFirst = async (request) => {
+  try {
+    const response = await fetch(request, { cache: 'no-store' });
+
+    if (response && response.status === 200) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, response.clone());
+    }
+
+    return response;
+  } catch {
+    const cachedResponse = await caches.match(request);
+
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+
+    return caches.match('/CubanitosDulces/');
+  }
+};
+
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') {
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
+  const url = new URL(event.request.url);
 
-      return fetch(event.request)
-        .then((response) => {
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
+  if (url.origin !== self.location.origin) {
+    return;
+  }
 
-          const responseClone = response.clone();
+  if (isHtmlRequest(event.request)) {
+    event.respondWith(networkFirst(event.request));
+    return;
+  }
 
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
-
-          return response;
-        })
-        .catch(() => caches.match('/CubanitosDulces/'));
-    }),
-  );
+  if (isStaticAsset(url)) {
+    event.respondWith(cacheFirst(event.request));
+  }
 });
